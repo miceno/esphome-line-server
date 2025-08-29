@@ -128,8 +128,48 @@ void RolloffinoComponent::read() {
     }
 }
 
+void RolloffinoComponent::send_response(const std::string &response) {
+		if (response.empty())
+				return;
+
+		for (Client &client : this->clients_) {
+				if (client.disconnected)
+						continue;
+
+				ssize_t total_sent = 0;
+				while (total_sent < static_cast<ssize_t>(response.size())) {
+						ssize_t sent = client.socket->write(
+								reinterpret_cast<const uint8_t *>(response.data()) + total_sent,
+								response.size() - total_sent);
+						if (sent > 0) {
+								total_sent += sent;
+						} else if (sent == 0 || errno == ECONNRESET) {
+								ESP_LOGD(TAG, "Client %s disconnected during write", client.identifier.c_str());
+								client.disconnected = true;
+								break;
+						} else if (errno == EWOULDBLOCK || errno == EAGAIN) {
+								// Socket not ready for writing; could implement a retry mechanism here
+								ESP_LOGW(TAG, "Socket not ready for writing to client %s", client.identifier.c_str());
+								break;
+						} else {
+								ESP_LOGW(TAG, "Error writing to client %s: errno=%d", client.identifier.c_str(), errno);
+								client.disconnected = true;
+								break;
+						}
+				}
+		}
+}
+
 void RolloffinoComponent::process_command(const std::string &command){
 	ESP_LOGD("rolloffino", "Command is %s", command.c_str());
+
+	std::string response;
+	// Process command here
+	if( command == "(CON:0:0)" ){
+		response = "(ACK:0:0)";
+	}else if( command == "(CON:1:0)" ){
+	}
+	this->send_response(response);
 }
 
 void RolloffinoComponent::flush_tcp_buffer() {
