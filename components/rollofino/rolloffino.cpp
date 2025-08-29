@@ -42,7 +42,7 @@ void RolloffinoComponent::setup() {
 
 void RolloffinoComponent::loop() {
   this->write();                  // TCP → buffer
-  this->flush_tcp_buffer();       // TCP buffer → UART
+  this->flush_tcp_buffer();       // TCP buffer → processing
   this->cleanup();
 }
 

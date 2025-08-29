@@ -42,8 +42,6 @@ protected:
     void publish_sensor();
     void accept();
     void cleanup();
-    void read();
-    void flush_uart_buffer();
     void write();
     void flush_tcp_buffer();
 
