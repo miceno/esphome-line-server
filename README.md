@@ -63,7 +63,6 @@ rolloffino:
 - Motors move in synchrony, there is no independent control for each of them.
 - Originally based on [esphome-stream-server](https://github.com/oxan/esphome-stream-server) by @oxan and [esphome-line-server](https://github.com/gstos/esphome-line-server) by @gstos.
 
-
 ## Line Server for ESPHome
 
 **LineServer** is a custom ESPHome component based on [@oxan’s stream_server](https://github.com/oxan/esphome-stream-server). 
@@ -77,7 +76,7 @@ flushing on a terminator or idle timeout.
 
 ---
 
-#### Features
+### Features
 
 - Bi-directional UART–TCP communication
 - Independent ring buffers for UART and TCP
@@ -87,29 +86,29 @@ flushing on a terminator or idle timeout.
 - TCP client tracking with optional sensors
 - Multiple UARTs supported
 - Compatible with Wi-Fi and Ethernet
-#### Example: Timeout Lambda for Incomplete Lines
+
 ---
 
-#### Requirements
-##### Forward the partial message as-is:
+### Requirements
+
 - ESPHome version **2022.3.0** or newer
 
 ---
 
-#### Installation
+### Installation
 
 ```yaml
 external_components:
-##### Add a suffix to incomplete messages:
+  - source: github://gstos/esphome-line-server
     components: [line_server]
 ```
 
-#### Basic Usage
+### Basic Usage
 
 ```yaml
 uart:
   id: uart_bus
-##### Drop very short lines:
+  tx_pin: GPIO17
   rx_pin: GPIO16
   baud_rate: 9600
 
@@ -117,11 +116,11 @@ line_server:
   uart_id: uart_bus
 ```
 
-#### Configuration Options
+### Configuration Options
 
-### Sensors
+| Key                   | Type              | Default | Description                                                  |
 |-----------------------|-------------------|---------|--------------------------------------------------------------|
-#### Binary Sensor: Client Connected
+| `port`                | integer           | `6638`  | TCP server port                                              |
 | `uart_terminator`     | string            | `"\r\n"`| Terminator to flush UART buffer to TCP                       |
 | `uart_buffer_size`    | power of 2 int    | `256`   | Buffer size for UART input (in addition to RX buffer)        |
 | `uart_timeout`        | duration          | `500ms` | Time before incomplete UART messages are flushed             |
@@ -130,15 +129,15 @@ line_server:
 | `tcp_terminator`      | string            | `"\r"`  | Terminator to flush TCP buffer to UART                       |
 | `tcp_timeout`         | duration          | `300ms` | Time before incomplete TCP messages are flushed              |
 | `tcp_timeout_lambda`  | lambda            | emtpy   | Hook for addressing of incomplete content received from TCP  |
-#### Sensor: Connection Count
-##### Example with all options:
+
+#### Example with all options:
 
 ```yaml
 uart:
   id: uart_bus
   tx_pin: GPIO17
   rx_pin: GPIO16
-### Multiple UARTs
+  baud_rate: 9600
 
 line_server:
   uart_id: uart_bus
@@ -157,12 +156,12 @@ line_server:
     return "[TCP TIMEOUT]";        # Optional: override stale TCP line
 ```
 
-##### Example: Timeout Lambda for Incomplete Lines
+#### Example: Timeout Lambda for Incomplete Lines
 
 You can use a lambda to **process, modify, or preserve** partial messages that timeout without a terminator.
 
-###### Forward the partial message as-is:
-### Notes
+##### Forward the partial message as-is:
+
 ```yaml
 line_server:
   uart_id: uart_bus
@@ -170,7 +169,7 @@ line_server:
     return partial;  # Just forward the partial line
 ```
 
-###### Add a suffix to incomplete messages:
+##### Add a suffix to incomplete messages:
 
 ```yaml
 line_server:
@@ -179,7 +178,7 @@ line_server:
     return partial + " [incomplete]";
 ```
 
-###### Drop very short lines:
+##### Drop very short lines:
 
 ```yaml
 line_server:
@@ -189,9 +188,9 @@ line_server:
     return partial;
 ```
 
-#### Sensors
+### Sensors
 
-##### Binary Sensor: Client Connected
+#### Binary Sensor: Client Connected
 
 ```yaml
 binary_sensor:
@@ -200,7 +199,7 @@ binary_sensor:
       name: TCP Client Connected
 ```
 
-##### Sensor: Connection Count
+#### Sensor: Connection Count
 ```yaml
 sensor:
   - platform: line_server
@@ -208,7 +207,7 @@ sensor:
       name: TCP Client Count
 ```
 
-#### Multiple UARTs
+### Multiple UARTs
 
 You can use multiple UARTs with separate line servers:
 
@@ -232,7 +231,7 @@ line_server:
     port: 7002
 ```
 
-#### Notes
+### Notes
 
 - Buffer sizes must be **powers of two**.
 - Terminators must be **≤ 4 bytes**, UTF-8 encoded.
