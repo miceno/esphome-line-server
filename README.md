@@ -1,4 +1,73 @@
-# Line Server for ESPHome
+
+
+
+# ESPHome Components
+
+## Rollofino for ESPHome
+
+**RolloffinoServer** is a custom ESPHome component based on [@oxan’s stream_server](https://github.com/oxan/esphome-stream-server). 
+It acts as a [Rolloffino device](https://github.com/indilib/indi-3rdparty/tree/master/indi-rolloffino) suitable to be integrated in [Kstars](https://kstars.kde.org/).
+
+The component listens on a configurable TCP port and accepts the rollofino protocol.
+
+### Features
+
+- TCP server for Rolloffino protocol
+- Bi-directional TCP communication
+- Compatible with Wi-Fi
+- TODO: add `ROOF_MOVEMENT_MIN_TIME_MILLIS` and `ROOF_MOTION_END_DELAY_MILLIS` settings.
+- TODO: add support for regulating the speed of each motor to keep them in sync.
+
+
+### Requirements
+
+- ESPHome version **2022.3.0** or newer
+
+### Installation
+
+```yaml
+external_components:
+  - source: github://miceno/esphome-line-server
+    components: [rolloffino]
+```
+### Configuration
+
+```yaml
+
+rolloffino:
+  port: 8888
+  left_motor:
+    enable_pin: D5
+### Basic Usage
+  right_motor:
+    enable_pin: D7
+    direction_pin: D8
+  opened_pin: D1
+  closed_pin: D2
+```
+
+### Configuration Options
+
+| Key             | Type    | Default | Description                                                      |
+|-----------------|---------|---------|------------------------------------------------------------------|
+| `port`          | integer | `8888`  | TCP server port                                                  |
+| `opened_pin`    | gpio    | `"D1"`  | Pin connected to the limit sensor that marks the OPENED position |
+| `closed_pin`    | gpio    | `"D2"`  | Pin connected to the limit sensor that marks the CLOSED position |
+| `left_motor`    |         |         | Left Motor configuration                                         |
+| `direction_pin` | gpio    | `"D8"`  | Pin connected to the direction pin on the motor controller       |
+| `enable_pin`    | gpio    | `"D7"`  | Pin connected to the enable pin on the motor controller          |
+| `right_motor`   |         |         | Right Motor configuration                                        |
+| `direction_pin` | gpio    | `"D5"`  | Pin connected to the direction pin on the motor controller       |
+| `enable_pin`    | gpio    | `"D6"`  | Pin connected to the enable pin on the motor controller          |
+
+
+### Notes
+
+- Motors move in synchrony, there is no independent control for each of them.
+- Originally based on [esphome-stream-server](https://github.com/oxan/esphome-stream-server) by @oxan and [esphome-line-server](https://github.com/gstos/esphome-line-server) by @gstos.
+
+
+## Line Server for ESPHome
 
 **LineServer** is a custom ESPHome component based on [@oxan’s stream_server](https://github.com/oxan/esphome-stream-server). 
 It acts as a transparent UART-to-TCP line-oriented bridge, 
@@ -11,7 +80,7 @@ flushing on a terminator or idle timeout.
 
 ---
 
-## Features
+#### Features
 
 - Bi-directional UART–TCP communication
 - Independent ring buffers for UART and TCP
@@ -21,29 +90,29 @@ flushing on a terminator or idle timeout.
 - TCP client tracking with optional sensors
 - Multiple UARTs supported
 - Compatible with Wi-Fi and Ethernet
-
+#### Example: Timeout Lambda for Incomplete Lines
 ---
 
-## Requirements
-
+#### Requirements
+##### Forward the partial message as-is:
 - ESPHome version **2022.3.0** or newer
 
 ---
 
-## Installation
+#### Installation
 
 ```yaml
 external_components:
-  - source: github://gstos/esphome-line-server
+##### Add a suffix to incomplete messages:
     components: [line_server]
 ```
 
-## Basic Usage
+#### Basic Usage
 
 ```yaml
 uart:
   id: uart_bus
-  tx_pin: GPIO17
+##### Drop very short lines:
   rx_pin: GPIO16
   baud_rate: 9600
 
@@ -51,11 +120,11 @@ line_server:
   uart_id: uart_bus
 ```
 
-## Configuration Options
+#### Configuration Options
 
-| Key                   | Type              | Default | Description                                                  |
+### Sensors
 |-----------------------|-------------------|---------|--------------------------------------------------------------|
-| `port`                | integer           | `6638`  | TCP server port                                              |
+#### Binary Sensor: Client Connected
 | `uart_terminator`     | string            | `"\r\n"`| Terminator to flush UART buffer to TCP                       |
 | `uart_buffer_size`    | power of 2 int    | `256`   | Buffer size for UART input (in addition to RX buffer)        |
 | `uart_timeout`        | duration          | `500ms` | Time before incomplete UART messages are flushed             |
@@ -64,15 +133,15 @@ line_server:
 | `tcp_terminator`      | string            | `"\r"`  | Terminator to flush TCP buffer to UART                       |
 | `tcp_timeout`         | duration          | `300ms` | Time before incomplete TCP messages are flushed              |
 | `tcp_timeout_lambda`  | lambda            | emtpy   | Hook for addressing of incomplete content received from TCP  |
-
-### Example with all options:
+#### Sensor: Connection Count
+##### Example with all options:
 
 ```yaml
 uart:
   id: uart_bus
   tx_pin: GPIO17
   rx_pin: GPIO16
-  baud_rate: 9600
+### Multiple UARTs
 
 line_server:
   uart_id: uart_bus
@@ -91,12 +160,12 @@ line_server:
     return "[TCP TIMEOUT]";        # Optional: override stale TCP line
 ```
 
-### Example: Timeout Lambda for Incomplete Lines
+##### Example: Timeout Lambda for Incomplete Lines
 
 You can use a lambda to **process, modify, or preserve** partial messages that timeout without a terminator.
 
-#### Forward the partial message as-is:
-
+###### Forward the partial message as-is:
+### Notes
 ```yaml
 line_server:
   uart_id: uart_bus
@@ -104,7 +173,7 @@ line_server:
     return partial;  # Just forward the partial line
 ```
 
-#### Add a suffix to incomplete messages:
+###### Add a suffix to incomplete messages:
 
 ```yaml
 line_server:
@@ -113,7 +182,7 @@ line_server:
     return partial + " [incomplete]";
 ```
 
-#### Drop very short lines:
+###### Drop very short lines:
 
 ```yaml
 line_server:
@@ -123,9 +192,9 @@ line_server:
     return partial;
 ```
 
-## Sensors
+#### Sensors
 
-### Binary Sensor: Client Connected
+##### Binary Sensor: Client Connected
 
 ```yaml
 binary_sensor:
@@ -134,7 +203,7 @@ binary_sensor:
       name: TCP Client Connected
 ```
 
-### Sensor: Connection Count
+##### Sensor: Connection Count
 ```yaml
 sensor:
   - platform: line_server
@@ -142,7 +211,7 @@ sensor:
       name: TCP Client Count
 ```
 
-## Multiple UARTs
+#### Multiple UARTs
 
 You can use multiple UARTs with separate line servers:
 
@@ -166,7 +235,7 @@ line_server:
     port: 7002
 ```
 
-## Notes
+#### Notes
 
 - Buffer sizes must be **powers of two**.
 - Terminators must be **≤ 4 bytes**, UTF-8 encoded.
@@ -180,4 +249,3 @@ line_server:
 - Notice that the default behaviour is to **flush** the buffers on a timeout.
   Consider this behaviour for protocols that expect a response to a command.
 - Originally based on [esphome-stream-server](https://github.com/oxan/esphome-stream-server) by @oxan.
-
