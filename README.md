@@ -1,6 +1,3 @@
-
-
-
 # ESPHome Components
 
 ## Rollofino for ESPHome
@@ -38,7 +35,7 @@ rolloffino:
   port: 8888
   left_motor:
     enable_pin: D5
-### Basic Usage
+    direction_pin: D6
   right_motor:
     enable_pin: D7
     direction_pin: D8
