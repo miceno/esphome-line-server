@@ -30,6 +30,7 @@ public:
         this->tcp_timeout_callback_ = std::move(cb);
     }
     void process_command(const std::string &command);
+    void send_response(const std::string &response);
 
     void setup() override;
     void loop() override;
