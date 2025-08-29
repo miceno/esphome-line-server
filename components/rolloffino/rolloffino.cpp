@@ -12,6 +12,7 @@ using esphome::rolloffino::RingBuffer;
 using namespace esphome;
 
 static const char *const TAG = "rolloffino";
+static const char *const VERSION = "V1.7-esp-wifimanager-magnet-DRV8871";
 
 void RolloffinoComponent::setup() {
   ESP_LOGCONFIG(TAG, "Setting up rollofino...");
@@ -172,19 +173,19 @@ void RolloffinoComponent::process_command(const std::string &command){
 		ESP_LOGD(TAG, "Connection request");
 		response = "(ACK:0:0)";
 	}
-	else if (command == "(GET:OPENED:0)")){
+	else if (command == "(GET:OPENED:0)"){
 		ESP_LOGD(TAG, "Opened status");
 		response = "(ACK:OPENED:ON)";
 	}
-	else if (command == "(GET:CLOSED:0)")){
+	else if (command == "(GET:CLOSED:0)"){
 		ESP_LOGD(TAG, "Closed status");
 		response = "(ACK:CLOSED:ON)";
 	}
-	else if (command == "(SET:OPEN:0)")){
+	else if (command == "(SET:OPEN:0)"){
 		ESP_LOGD(TAG, "Open cover");
 		response = "(ACK:OPEN:ON)";
 	}
-	else if (command == "(SET:CLOSE:0)")){
+	else if (command == "(SET:CLOSE:0)"){
 		ESP_LOGD(TAG, "Close cover");
 		response = "(ACK:CLOSE:ON)";
 	}
