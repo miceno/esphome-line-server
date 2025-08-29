@@ -94,7 +94,10 @@ void RolloffinoComponent::cleanup() {
   }
 }
 
-
+/*
+ * Read data from all connected clients and writes to the TCP buffer.
+ * Handles disconnections and read errors gracefully.
+ */
 void RolloffinoComponent::read() {
     if (!this->tcp_buf_)
         return;
