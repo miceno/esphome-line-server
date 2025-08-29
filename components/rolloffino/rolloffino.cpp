@@ -127,6 +127,10 @@ void RolloffinoComponent::read() {
     }
 }
 
+void RolloffinoComponent::process_command(const std::string &command){
+	ESP_LOGD("rolloffino", "Command is %s", command.c_str());
+}
+
 void RolloffinoComponent::flush_tcp_buffer() {
     if (!this->tcp_buf_)
         return;
