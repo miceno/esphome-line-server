@@ -42,7 +42,7 @@ protected:
     void publish_sensor();
     void accept();
     void cleanup();
-    void write();
+    void read();
     void flush_tcp_buffer();
 
     struct Client {

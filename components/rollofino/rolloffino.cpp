@@ -41,7 +41,7 @@ void RolloffinoComponent::setup() {
 }
 
 void RolloffinoComponent::loop() {
-  this->write();                  // TCP → buffer
+  this->read();                  // TCP → buffer
   this->flush_tcp_buffer();       // TCP buffer → processing
   this->cleanup();
 }
@@ -94,7 +94,7 @@ void RolloffinoComponent::cleanup() {
 }
 
 
-void RolloffinoComponent::write() {
+void RolloffinoComponent::read() {
     if (!this->tcp_buf_)
         return;
 
