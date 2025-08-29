@@ -12,8 +12,9 @@ The component listens on a configurable TCP port and accepts the rollofino proto
 - TCP server for Rolloffino protocol
 - Bi-directional TCP communication
 - Compatible with Wi-Fi
-- TODO: add `ROOF_MOVEMENT_MIN_TIME_MILLIS` and `ROOF_MOTION_END_DELAY_MILLIS` settings.
-- TODO: add support for regulating the speed of each motor to keep them in sync.
+- TODO: Add Cover support
+- TODO: Add `ROOF_MOVEMENT_MIN_TIME_MILLIS` and `ROOF_MOTION_END_DELAY_MILLIS` settings.
+- TODO: Add support for regulating the speed of each motor to keep them in sync.
 
 
 ### Requirements
