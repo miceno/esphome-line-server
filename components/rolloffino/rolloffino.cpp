@@ -94,7 +94,7 @@ void RolloffinoComponent::cleanup() {
   }
 }
 
-/*
+/**
  * Read data from all connected clients and writes to the TCP buffer.
  * Handles disconnections and read errors gracefully.
  */
@@ -164,14 +164,31 @@ void RolloffinoComponent::send_response(const std::string &response) {
 }
 
 void RolloffinoComponent::process_command(const std::string &command){
-	ESP_LOGD("rolloffino", "Command is %s", command.c_str());
+	ESP_LOGD(TAG, "Command is %s", command.c_str());
 
 	std::string response;
 	// Process command here
 	if( command == "(CON:0:0)" ){
+		ESP_LOGD(TAG, "Connection request");
 		response = "(ACK:0:0)";
-	}else if( command == "(CON:1:0)" ){
 	}
+	else if (command == "(GET:OPENED:0)")){
+		ESP_LOGD(TAG, "Opened status");
+		response = "(ACK:OPENED:ON)";
+	}
+	else if (command == "(GET:CLOSED:0)")){
+		ESP_LOGD(TAG, "Closed status");
+		response = "(ACK:CLOSED:ON)";
+	}
+	else if (command == "(SET:OPEN:0)")){
+		ESP_LOGD(TAG, "Open cover");
+		response = "(ACK:OPEN:ON)";
+	}
+	else if (command == "(SET:CLOSE:0)")){
+		ESP_LOGD(TAG, "Close cover");
+		response = "(ACK:CLOSE:ON)";
+	}
+
 	this->send_response(response);
 }
 
