@@ -189,6 +189,14 @@ void RolloffinoComponent::process_command(const std::string &command){
 		ESP_LOGD(TAG, "Close cover");
 		response = "(ACK:CLOSE:ON)";
 	}
+	else if (command == "(GET:LOCKED:0)"){
+		ESP_LOGD(TAG, "Locked status");
+		response = "(ACK:LOCKED:OFF)";
+	}
+	else if (command == "(GET:AUXSTATE:0)"){
+		ESP_LOGD(TAG, "Aux state");
+		response = "(ACK:AUXSTATE:OFF)";
+	}
 
 	this->send_response(response);
 }
