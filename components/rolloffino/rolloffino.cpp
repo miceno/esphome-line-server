@@ -182,11 +182,21 @@ void RolloffinoComponent::process_command(const std::string &command){
 	}
 	else if (command == "(GET:OPENED:0)"){
 		ESP_LOGD(TAG, "Opened status");
-		response = "(ACK:OPENED:OFF)";
+		response = "(ACK:OPENED:";
+		if (this->opened_binary_sensor_ != nullptr && this->opened_binary_sensor_->state) {
+			response += "ON)";
+		} else {
+			response += "OFF)";
+		}
 	}
 	else if (command == "(GET:CLOSED:0)"){
 		ESP_LOGD(TAG, "Closed status");
-		response = "(ACK:CLOSED:ON)";
+		response = "(ACK:CLOSED:";
+		if (this->closed_binary_sensor_ != nullptr && this->closed_binary_sensor_->state) {
+			response += "ON)";
+		} else {
+			response += "OFF)";
+		}
 	}
 	else if (command == "(SET:OPEN:0)"){
 		ESP_LOGD(TAG, "Open cover");
