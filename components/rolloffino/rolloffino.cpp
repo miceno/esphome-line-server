@@ -182,7 +182,7 @@ void RolloffinoComponent::process_command(const std::string &command){
 	}
 	else if (command == "(GET:OPENED:0)"){
 		ESP_LOGD(TAG, "Opened status");
-		response = "(ACK:OPENED:ON)";
+		response = "(ACK:OPENED:OFF)";
 	}
 	else if (command == "(GET:CLOSED:0)"){
 		ESP_LOGD(TAG, "Closed status");
