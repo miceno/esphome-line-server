@@ -54,9 +54,9 @@ void RolloffinoComponent::dump_config() {
       tcp_buf_size_,
       esphome::format_hex_pretty((const uint8_t*)tcp_terminator_.data(), tcp_terminator_.size()).c_str());
   ESP_LOGCONFIG(TAG, "TCP flush timeout: %ums", tcp_flush_timeout_ms_);
-  ESP_LOGCONFIG(TAG, "Opened sensor: %s", this->opened_binary_sensor_ != nullptr ? this->opened_binary_sensor_->get_name().c_str() : "None");
-  ESP_LOGCONFIG(TAG, "Closed sensor: %s", this->closed_binary_sensor_ != nullptr ? this->closed_binary_sensor_->get_name().c_str() : "None");
+  ESP_LOGCONFIG(TAG, "Opened sensor: %s", this->opened_binary_sensor_ != nullptr ? this->opened_binary_sensor_->get_object_id().c_str() : "None");
   LOG_BINARY_SENSOR("  ", "Opened sensor:", this->opened_binary_sensor_);
+  ESP_LOGCONFIG(TAG, "Closed sensor: %s", this->closed_binary_sensor_ != nullptr ? this->closed_binary_sensor_->get_object_id().c_str() : "None");
   LOG_BINARY_SENSOR("  ", "Closed sensor:", this->closed_binary_sensor_);
 }
 
