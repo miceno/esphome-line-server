@@ -220,7 +220,6 @@ void RolloffinoComponent::flush_tcp_buffer() {
         if (command.empty())
             break;
 
-        ESP_LOGD(TAG, "TCP [line]: '%s'", command.c_str());
         this->process_command(command);
     }
 
