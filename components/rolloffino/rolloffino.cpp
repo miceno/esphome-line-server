@@ -49,13 +49,13 @@ void RolloffinoComponent::loop() {
 }
 
 void RolloffinoComponent::dump_config() {
-  ESP_LOGCONFIG(TAG, "Rollofino:");
-  ESP_LOGCONFIG(TAG, "- Listening on: %s:%u", esphome::network::get_use_address().c_str(), this->port_);
-ESP_LOGCONFIG(TAG, "- TCP buffer: size=%zu, terminator=%s",
+  ESP_LOGCONFIG(TAG, "Listening on: %s:%u", esphome::network::get_use_address().c_str(), this->port_);
+  ESP_LOGCONFIG(TAG, "TCP buffer: size=%zu, terminator=%s",
       tcp_buf_size_,
       esphome::format_hex_pretty((const uint8_t*)tcp_terminator_.data(), tcp_terminator_.size()).c_str());
-  ESP_LOGCONFIG(TAG, "- TCP flush timeout: %ums", tcp_flush_timeout_ms_);
-
+  ESP_LOGCONFIG(TAG, "TCP flush timeout: %ums", tcp_flush_timeout_ms_);
+  ESP_LOGCONFIG(TAG, "Opened sensor: %s", opened_binary_sensor_->get_object_id().c_str());
+  ESP_LOGCONFIG(TAG, "Closed sensor: %s", closed_binary_sensor_->get_object_id().c_str());
 }
 
 void RolloffinoComponent::on_shutdown() {

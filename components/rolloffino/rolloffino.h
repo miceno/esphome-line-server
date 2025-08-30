@@ -9,6 +9,7 @@
 #include "esphome/core/component.h"
 #include "esphome/core/hal.h"
 #include "esphome/core/helpers.h"
+#include "esphome/components/binary_sensor/binary_sensor.h"
 #include "esphome/components/socket/socket.h"
 #include "esphome/components/rolloffino/ring_buffer.h"
 
@@ -29,6 +30,9 @@ public:
     void set_tcp_timeout_callback(std::function<std::string(const std::string &)> cb) {
         this->tcp_timeout_callback_ = std::move(cb);
     }
+		void set_opened_binary_sensor(binary_sensor::BinarySensor *sensor) { this->opened_binary_sensor_ = sensor; }
+		void set_closed_binary_sensor(binary_sensor::BinarySensor *sensor) { this->closed_binary_sensor_ = sensor; }
+
     void process_command(const std::string &command);
     void send_response(const std::string &response);
 
@@ -66,4 +70,9 @@ protected:
     std::vector<Client> clients_;
 
     bool has_active_clients() const;
+
+ protected:
+  binary_sensor::BinarySensor *opened_binary_sensor_;
+  binary_sensor::BinarySensor *closed_binary_sensor_;
+
 };
