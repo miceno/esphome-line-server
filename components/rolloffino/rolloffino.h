@@ -14,6 +14,7 @@
 #include "esphome/components/rolloffino/ring_buffer.h"
 
 using esphome::rolloffino::RingBuffer;
+using namespace esphome;
 
 class RolloffinoComponent : public esphome::Component {
 public:
