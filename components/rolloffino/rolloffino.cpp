@@ -136,6 +136,13 @@ void RolloffinoComponent::send_response(const std::string &response) {
 		if (response.empty())
 				return;
 
+		ESP_LOGD(TAG, "Send message %s", response.c_str());
+		// Send response to all connected clients
+		// Note: In a real application, you might want to send responses only to the
+		// client that sent the command or implement a more complex routing mechanism.
+		// Here, we broadcast to all connected clients for simplicity.
+		// Handle partial writes and disconnections
+
 		for (Client &client : this->clients_) {
 				if (client.disconnected)
 						continue;
