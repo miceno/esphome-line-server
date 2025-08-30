@@ -69,10 +69,10 @@ async def to_code(config):
     cg.add(var.set_tcp_flush_timeout(config[CONF_TCP_TIMEOUT]))
 
     open_sensor = await cg.get_variable(config[CONF_OPENED_SENSOR])
-    cg.add(var.set_opened_sensor(open_sensor))
+    cg.add(var.set_opened_binary_sensor(open_sensor))
 
     closed_sensor = await cg.get_variable(config[CONF_CLOSED_SENSOR])
-    cg.add(var.set_closed_sensor(closed_sensor))
+    cg.add(var.set_closed_binary_sensor(closed_sensor))
 
     if CONF_TCP_TIMEOUT_LAMBDA in config:
         tcp_lambda_ = await cg.process_lambda(
