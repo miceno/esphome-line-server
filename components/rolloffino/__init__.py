@@ -1,5 +1,6 @@
 import esphome.codegen as cg
 import esphome.config_validation as cv
+from esphome.components import binary_sensor
 from esphome.const import (
     CONF_ID,
     CONF_PORT,
@@ -10,6 +11,8 @@ CONF_TCP_BUFFER_SIZE = "tcp_buffer_size"
 CONF_TCP_TERMINATOR = "tcp_terminator"
 CONF_TCP_TIMEOUT = "tcp_timeout"
 CONF_TCP_TIMEOUT_LAMBDA = "tcp_timeout_lambda"
+CONF_OPENED_SENSOR = "opened_sensor"
+CONF_CLOSED_SENSOR = "closed_sensor"
 
 AUTO_LOAD = ["socket"]
 
@@ -49,7 +52,10 @@ CONFIG_SCHEMA = cv.All(
             cv.Optional(CONF_TCP_TIMEOUT, default="300ms"): cv.positive_time_period_milliseconds,
             cv.Optional(CONF_TCP_TIMEOUT_LAMBDA): cv.returning_lambda,
 
-            }
+            cv.Required(CONF_OPENED_SENSOR): cv.use_id(binary_sensor.BinarySensor),
+            cv.Required(CONF_CLOSED_SENSOR): cv.use_id(binary_sensor.BinarySensor),
+
+        }
         )
     .extend(cv.COMPONENT_SCHEMA),
     )

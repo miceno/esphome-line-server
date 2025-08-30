@@ -12,6 +12,7 @@ The component listens on a configurable TCP port and accepts the rollofino proto
 - TCP server for Rolloffino protocol
 - Bi-directional TCP communication
 - Compatible with Wi-Fi
+- TODO: Use binary sensors for limit switches
 - TODO: Add Cover support
 - TODO: Add `ROOF_MOVEMENT_MIN_TIME_MILLIS` and `ROOF_MOTION_END_DELAY_MILLIS` settings.
 - TODO: Add support for regulating the speed of each motor to keep them in sync.
@@ -32,6 +33,31 @@ external_components:
 
 ```yaml
 
+binary_sensor:
+  - platform: gpio
+    id: opened_binary_sensor
+    interrupt_type: ANY
+    pin:
+      number: D1
+      inverted: True
+      mode:
+        input: true
+        pullup: true
+    name: "Rolloffino Opened Sensor"
+    device_class: opening
+
+  - platform: gpio
+    id: closed_binary_sensor
+    interrupt_type: ANY
+    pin:
+      number: D2
+      inverted: True
+      mode:
+        input: true
+        pullup: true
+    name: "Rolloffino Closed Sensor"
+    device_class: opening
+    
 rolloffino:
   port: 8888
   left_motor:
@@ -40,8 +66,8 @@ rolloffino:
   right_motor:
     enable_pin: D7
     direction_pin: D8
-  opened_pin: D1
-  closed_pin: D2
+  opened_sensor: opened_binary_sensor
+  closed_sensor: closed_binary_sensor
 ```
 
 ### Configuration Options
