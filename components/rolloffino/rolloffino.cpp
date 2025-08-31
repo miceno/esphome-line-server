@@ -280,7 +280,7 @@ void RolloffinoComponent::motor_open_() {
     this->motor_direction_ = MOTOR_OPEN;
     this->motor_active_ = true;
     this->motor_steps_remaining_ = 200;    // Adjust as needed
-    this->motor_last_step_time_ = micros();
+    this->motor_last_step_time_ = esphome::micros();
   }
 }
 
@@ -291,7 +291,7 @@ void RolloffinoComponent::motor_close_() {
     this->motor_direction_ = MOTOR_CLOSE;
     this->motor_active_ = true;
     this->motor_steps_remaining_ = 200;    // Adjust as needed
-    this->motor_last_step_time_ = micros();
+    this->motor_last_step_time_ = esphome::micros();
   }
 }
 
@@ -305,10 +305,10 @@ void RolloffinoComponent::handle_motor_() {
   if (!this->motor_active_ || this->motor_direction_ == MOTOR_NONE || this->motor_steps_remaining_ <= 0)
     return;
 
-  uint32_t now = micros();
+  uint32_t now = esphome::micros();
   if (now - this->motor_last_step_time_ >= 2000) {
     this->step_pin_->digital_write(true);
-    delayMicroseconds(1000); // Pulse width
+    delayMicroseconds((uint32_t)1000); // Pulse width
     this->step_pin_->digital_write(false);
     this->motor_steps_remaining_--;
     this->motor_last_step_time_ = now;
