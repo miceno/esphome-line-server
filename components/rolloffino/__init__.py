@@ -63,6 +63,7 @@ CONFIG_SCHEMA = cv.All(
 
             cv.Required(CONF_IN1_PIN): pins.gpio_output_pin_schema,
             cv.Required(CONF_IN2_PIN): pins.gpio_output_pin_schema,
+            cv.Optional(CONF_DUTY_CYCLE, default="100"): cv.int_range(min=0, max=100),
         }
         )
     .extend(cv.COMPONENT_SCHEMA),
