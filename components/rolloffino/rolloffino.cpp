@@ -275,14 +275,14 @@ bool RolloffinoComponent::has_active_clients() const {
 
 void RolloffinoComponent::motor_open_() {
   // Start non-blocking open sequence using PWM
-  if (this->direction_pin_ != nullptr && this->step_pin_ != nullptr) {
-    this->direction_pin_->digital_write(true);
+  if (this->in1_pin_ != nullptr && this->in2_pin_ != nullptr) {
+    this->in1_pin_->digital_write(true);
     this->motor_direction_ = MOTOR_OPEN;
     this->motor_active_ = true;
     this->motor_move_start_time_ = esphome::micros();
     if (!this->pwm_active_) {
       // 500 Hz, 50% duty cycle as example
-      analogWrite(this->step_pin_->get_pin(), duty);  // NOLINT
+      analogWrite(this->in2_pin_->get_pin(), duty);  // NOLINT
       this->pwm_active_ = true;
     }
   }
@@ -290,14 +290,14 @@ void RolloffinoComponent::motor_open_() {
 
 void RolloffinoComponent::motor_close_() {
   // Start non-blocking close sequence using PWM
-  if (this->direction_pin_ != nullptr && this->step_pin_ != nullptr) {
-    this->direction_pin_->digital_write(false);
+  if (this->in1_pin_ != nullptr && this->in2_pin_ != nullptr) {
+    this->in1_pin_->digital_write(false);
     this->motor_direction_ = MOTOR_CLOSE;
     this->motor_active_ = true;
     this->motor_move_start_time_ = esphome::micros();
     if (!this->pwm_active_) {
       // 500 Hz, 50% duty cycle as example
-      analogWrite(this->step_pin_->get_pin(), duty);  // NOLINT
+      analogWrite(this->in2_pin_->get_pin(), duty);  // NOLINT
       this->pwm_active_ = true;
     }
   }
@@ -306,12 +306,12 @@ void RolloffinoComponent::motor_close_() {
 void RolloffinoComponent::motor_abort_() {
   this->motor_active_ = false;
   this->motor_direction_ = MOTOR_NONE;
-  if (this->step_pin_ != nullptr && this->pwm_active_) {
-    this->step_pin_->digital_write(true);
+  if (this->in2_pin_ != nullptr && this->pwm_active_) {
+    this->in2_pin_->digital_write(true);
     this->pwm_active_ = false;
   }
-  if (this->direction_pin_ != nullptr)
-    this->direction_pin_->digital_write(true);
+  if (this->in1_pin_ != nullptr)
+    this->in1_pin_->digital_write(true);
 }
 
 void RolloffinoComponent::handle_motor_() {
