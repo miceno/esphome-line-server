@@ -74,11 +74,13 @@ protected:
 
     bool has_active_clients() const;
 
- protected:
-  binary_sensor::BinarySensor *opened_binary_sensor_;
-  binary_sensor::BinarySensor *closed_binary_sensor_;
+protected:
+		binary_sensor::BinarySensor *opened_binary_sensor_;
+		binary_sensor::BinarySensor *closed_binary_sensor_;
 		GPIOPin *step_pin_;
 		GPIOPin *direction_pin_;
 
+    void motor_open_();
+		void motor_close_();
 
 };
