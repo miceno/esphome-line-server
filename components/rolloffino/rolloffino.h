@@ -34,8 +34,8 @@ public:
     }
 		void set_opened_binary_sensor(binary_sensor::BinarySensor *sensor) { this->opened_binary_sensor_ = sensor; }
 		void set_closed_binary_sensor(binary_sensor::BinarySensor *sensor) { this->closed_binary_sensor_ = sensor; }
-		void set_in1_pin(GPIOPin *pin) { this->in1_pin_ = pin; }
-		void set_in2_pin(GPIOPin *pin) { this->in2_pin_ = pin; }
+		void set_in1_pin(InternalGPIOPin *pin) { this->in1_pin_ = pin; }
+		void set_in2_pin(InternalGPIOPin *pin) { this->in2_pin_ = pin; }
 
     void process_command(const std::string &command);
     void send_response(const std::string &response);
@@ -77,8 +77,8 @@ protected:
 
 		binary_sensor::BinarySensor *opened_binary_sensor_;
 		binary_sensor::BinarySensor *closed_binary_sensor_;
-		GPIOPin *in2_pin_;
-		GPIOPin *in1_pin_;
+		InternalGPIOPin *in2_pin_;
+		InternalGPIOPin *in1_pin_;
 
 		// Max PWM duty cycle (0-255)
 		uint16_t duty_cycle_ = 100;
