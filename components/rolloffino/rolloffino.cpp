@@ -46,6 +46,7 @@ void RolloffinoComponent::loop() {
   this->read();                  // TCP → buffer
   this->flush_tcp_buffer();       // TCP buffer → processing
   this->cleanup();
+  this->handle_motor_();          // Unified non-blocking motor steps
 }
 
 void RolloffinoComponent::dump_config() {
@@ -270,4 +271,50 @@ bool RolloffinoComponent::has_active_clients() const {
       return true;
   }
   return false;
+}
+
+void RolloffinoComponent::motor_open_() {
+  // Start non-blocking open sequence
+  if (this->direction_pin_ != nullptr && this->step_pin_ != nullptr) {
+    this->direction_pin_->digital_write(true);  // Set direction to open
+    this->motor_direction_ = MOTOR_OPEN;
+    this->motor_active_ = true;
+    this->motor_steps_remaining_ = 200;    // Adjust as needed
+    this->motor_last_step_time_ = micros();
+  }
+}
+
+void RolloffinoComponent::motor_close_() {
+  // Start non-blocking close sequence
+  if (this->direction_pin_ != nullptr && this->step_pin_ != nullptr) {
+    this->direction_pin_->digital_write(false);  // Set direction to close
+    this->motor_direction_ = MOTOR_CLOSE;
+    this->motor_active_ = true;
+    this->motor_steps_remaining_ = 200;    // Adjust as needed
+    this->motor_last_step_time_ = micros();
+  }
+}
+
+void RolloffinoComponent::motor_abort_() {
+  this->motor_active_ = false;
+  this->motor_direction_ = MOTOR_NONE;
+  this->motor_steps_remaining_ = 0;
+}
+
+void RolloffinoComponent::handle_motor_() {
+  if (!this->motor_active_ || this->motor_direction_ == MOTOR_NONE || this->motor_steps_remaining_ <= 0)
+    return;
+
+  uint32_t now = micros();
+  if (now - this->motor_last_step_time_ >= 2000) {
+    this->step_pin_->digital_write(true);
+    delayMicroseconds(1000); // Pulse width
+    this->step_pin_->digital_write(false);
+    this->motor_steps_remaining_--;
+    this->motor_last_step_time_ = now;
+    if (this->motor_steps_remaining_ <= 0) {
+      this->motor_active_ = false;
+      this->motor_direction_ = MOTOR_NONE;
+    }
+  }
 }

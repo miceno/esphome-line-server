@@ -74,13 +74,25 @@ protected:
 
     bool has_active_clients() const;
 
-protected:
 		binary_sensor::BinarySensor *opened_binary_sensor_;
 		binary_sensor::BinarySensor *closed_binary_sensor_;
 		GPIOPin *step_pin_;
 		GPIOPin *direction_pin_;
 
-    void motor_open_();
-		void motor_close_();
+    enum MotorDirection {
+        MOTOR_NONE,
+        MOTOR_OPEN,
+        MOTOR_CLOSE
+    };
 
+    void motor_open_();
+    void motor_close_();
+    void handle_motor_();
+    void motor_abort_(); // Immediately stop motor
+
+    // Unified motor state for non-blocking operation
+    MotorDirection motor_direction_ = MOTOR_NONE;
+    bool motor_active_ = false;
+    int motor_steps_remaining_ = 0;
+    uint32_t motor_last_step_time_ = 0;
 };
