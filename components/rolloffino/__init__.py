@@ -6,15 +6,17 @@ from esphome.const import (
     CONF_BUFFER_SIZE,
     CONF_ID,
     CONF_PORT,
-    CONF_DUTY_CYCLE,
 )
 
 CONF_IN1_PIN = "in1"
 CONF_IN2_PIN = "in2"
+CONF_DUTY_CYCLE = "duty_cycle"
+
 CONF_TCP_BUFFER_SIZE = "tcp_buffer_size"
 CONF_TCP_TERMINATOR = "tcp_terminator"
 CONF_TCP_TIMEOUT = "tcp_timeout"
 CONF_TCP_TIMEOUT_LAMBDA = "tcp_timeout_lambda"
+
 CONF_OPENED_SENSOR = "opened_sensor"
 CONF_CLOSED_SENSOR = "closed_sensor"
 
