@@ -23,6 +23,7 @@ public:
         tcp_terminator_ = term;
     }
 
+    void set_duty_cycle(uint16_t duty_cycle) { duty_cycle = duty_cycle; }
     void set_port(uint16_t port) { port_ = port; }
     void set_tcp_buffer_size(size_t size) { tcp_buf_size_ = size; }
     void set_tcp_flush_timeout(uint32_t ms) { tcp_flush_timeout_ms_ = ms; }
@@ -78,6 +79,9 @@ protected:
 		binary_sensor::BinarySensor *closed_binary_sensor_;
 		GPIOPin *in2_pin_;
 		GPIOPin *in1_pin_;
+
+		// Max PWM duty cycle (0-255)
+		uint16_t duty_cycle_ = 100;
 
     enum MotorDirection {
         MOTOR_NONE,

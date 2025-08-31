@@ -15,6 +15,7 @@ The component listens on a configurable TCP port and accepts the rollofino proto
 - Use binary sensors for limit switches
 - Control two motors in synchrony
 - Configurable motor control pins
+- Configurable duty cycle for motor speed
 - TODO: Add Cover support
 - TODO: Add `ROOF_MOVEMENT_MIN_TIME_MILLIS` and `ROOF_MOTION_END_DELAY_MILLIS` settings.
 - TODO: Add support for regulating the speed of each motor to keep them in sync.
@@ -62,25 +63,23 @@ binary_sensor:
     
 rolloffino:
   port: 8888
-  dir_pin: D1
-  step_pin: D2
+  en1_pin: D1
+  en2_pin: D2
+  duty_cycle: 0.8
   opened_sensor: opened_binary_sensor
   closed_sensor: closed_binary_sensor
 ```
 
 ### Configuration Options
 
-| Key             | Type    | Default | Description                                                      |
-|-----------------|---------|---------|------------------------------------------------------------------|
-| `port`          | integer | `8888`  | TCP server port                                                  |
-| `opened_pin`    | gpio    | `"D1"`  | Pin connected to the limit sensor that marks the OPENED position |
-| `closed_pin`    | gpio    | `"D2"`  | Pin connected to the limit sensor that marks the CLOSED position |
-| `left_motor`    |         |         | Left Motor configuration                                         |
-| `direction_pin` | gpio    | `"D8"`  | Pin connected to the direction pin on the motor controller       |
-| `enable_pin`    | gpio    | `"D7"`  | Pin connected to the enable pin on the motor controller          |
-| `right_motor`   |         |         | Right Motor configuration                                        |
-| `direction_pin` | gpio    | `"D5"`  | Pin connected to the direction pin on the motor controller       |
-| `enable_pin`    | gpio    | `"D6"`  | Pin connected to the enable pin on the motor controller          |
+| Key             | Type    | Default | Description                                                       |
+|-----------------|---------|---------|-------------------------------------------------------------------|
+| `port`          | integer | `8888`  | TCP server port                                                   |
+| `opened_sensor` | id      | `""`    | Binary sensor for the limit sensor that marks the OPENED position |
+| `closed_sensor` | id      | `""`    | Binary sensor for the limit sensor that marks the CLOSED position |
+| `en1_pin`       | gpio    | `"D8"`  | Pin connected to the EN1 pin on the motor controller              |
+| `en2_pin`       | gpio    | `"D7"`  | Pin connected to the EN2 pin on the motor controller              |
+| `duty_cycle`    | integer | `100%`  | Duty cycle as a percentage                                        |
 
 
 ### Notes
