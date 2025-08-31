@@ -325,6 +325,4 @@ void RolloffinoComponent::handle_motor_() {
     ESP_LOGW(TAG, "Motor movement aborted due to timeout");
     return;
   }
-
-  ESP_LOGD(TAG, "Motor movement active: direction=%d", static_cast<int>(this->motor_direction_));
 }
