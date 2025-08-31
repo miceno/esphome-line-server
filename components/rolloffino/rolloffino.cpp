@@ -308,7 +308,7 @@ void RolloffinoComponent::handle_motor_() {
   uint32_t now = esphome::micros();
   if (now - this->motor_last_step_time_ >= 2000) {
     this->step_pin_->digital_write(true);
-    delayMicroseconds((uint32_t)1000); // Pulse width
+    esphome::delayMicroseconds((uint32_t)1000); // Pulse width
     this->step_pin_->digital_write(false);
     this->motor_steps_remaining_--;
     this->motor_last_step_time_ = now;
