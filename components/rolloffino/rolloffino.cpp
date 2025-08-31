@@ -282,7 +282,7 @@ void RolloffinoComponent::motor_open_() {
     this->motor_move_start_time_ = esphome::micros();
     if (!this->pwm_active_) {
       // 500 Hz, 50% duty cycle as example
-      this->step_pin_->set_pwm(500, 0.5f);
+      analogWrite(this->step_pin_->get_pin(), duty);  // NOLINT
       this->pwm_active_ = true;
     }
   }
@@ -297,7 +297,7 @@ void RolloffinoComponent::motor_close_() {
     this->motor_move_start_time_ = esphome::micros();
     if (!this->pwm_active_) {
       // 500 Hz, 50% duty cycle as example
-      this->step_pin_->set_pwm(500, 0.5f);
+      analogWrite(this->step_pin_->get_pin(), duty);  // NOLINT
       this->pwm_active_ = true;
     }
   }
@@ -307,7 +307,7 @@ void RolloffinoComponent::motor_abort_() {
   this->motor_active_ = false;
   this->motor_direction_ = MOTOR_NONE;
   if (this->step_pin_ != nullptr && this->pwm_active_) {
-    this->step_pin_->set_pwm(0, 0.0f);
+    this->step_pin_->digital_write(true);
     this->pwm_active_ = false;
   }
   if (this->direction_pin_ != nullptr)
