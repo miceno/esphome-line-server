@@ -95,4 +95,6 @@ protected:
     bool motor_active_ = false;
     int motor_steps_remaining_ = 0;
     uint32_t motor_last_step_time_ = 0;
+    // Movement timeout in microseconds
+    uint32_t move_timeout = 10000000;
 };

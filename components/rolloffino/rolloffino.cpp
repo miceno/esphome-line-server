@@ -281,6 +281,7 @@ void RolloffinoComponent::motor_open_() {
     this->motor_active_ = true;
     this->motor_steps_remaining_ = 200;    // Adjust as needed
     this->motor_last_step_time_ = esphome::micros();
+    this->motor_move_start_time_ = esphome::micros();
   }
 }
 
@@ -292,6 +293,7 @@ void RolloffinoComponent::motor_close_() {
     this->motor_active_ = true;
     this->motor_steps_remaining_ = 200;    // Adjust as needed
     this->motor_last_step_time_ = esphome::micros();
+    this->motor_move_start_time_ = esphome::micros();
   }
 }
 
@@ -306,6 +308,12 @@ void RolloffinoComponent::handle_motor_() {
     return;
 
   uint32_t now = esphome::micros();
+  if (now - this->motor_move_start_time_ > this->move_timeout) {
+    this->motor_abort_();
+    ESP_LOGW(TAG, "Motor movement aborted due to timeout");
+    return;
+  }
+
   if (now - this->motor_last_step_time_ >= 2000) {
     this->step_pin_->digital_write(true);
     esphome::delayMicroseconds((uint32_t)1000); // Pulse width
