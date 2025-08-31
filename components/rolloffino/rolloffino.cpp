@@ -276,10 +276,11 @@ bool RolloffinoComponent::has_active_clients() const {
 void RolloffinoComponent::motor_open_() {
   // Start non-blocking open sequence
   if (this->direction_pin_ != nullptr && this->step_pin_ != nullptr) {
-    this->direction_pin_->digital_write(true);  // Set direction to open
+    // Set direction to open
+    this->direction_pin_->digital_write(true);
     this->motor_direction_ = MOTOR_OPEN;
     this->motor_active_ = true;
-    this->motor_steps_remaining_ = 200;    // Adjust as needed
+    this->motor_steps_remaining_ = 200;
     this->motor_last_step_time_ = esphome::micros();
     this->motor_move_start_time_ = esphome::micros();
   }
@@ -288,10 +289,11 @@ void RolloffinoComponent::motor_open_() {
 void RolloffinoComponent::motor_close_() {
   // Start non-blocking close sequence
   if (this->direction_pin_ != nullptr && this->step_pin_ != nullptr) {
-    this->direction_pin_->digital_write(false);  // Set direction to close
+    // Set direction to close
+    this->direction_pin_->digital_write(false);
     this->motor_direction_ = MOTOR_CLOSE;
     this->motor_active_ = true;
-    this->motor_steps_remaining_ = 200;    // Adjust as needed
+    this->motor_steps_remaining_ = 200;
     this->motor_last_step_time_ = esphome::micros();
     this->motor_move_start_time_ = esphome::micros();
   }
@@ -307,6 +309,7 @@ void RolloffinoComponent::handle_motor_() {
   if (!this->motor_active_ || this->motor_direction_ == MOTOR_NONE || this->motor_steps_remaining_ <= 0)
     return;
 
+  // Abort if movement exceeds timeout
   uint32_t now = esphome::micros();
   if (now - this->motor_move_start_time_ > this->move_timeout) {
     this->motor_abort_();
@@ -314,9 +317,10 @@ void RolloffinoComponent::handle_motor_() {
     return;
   }
 
+  // Step the motor if enough time has passed since last step
   if (now - this->motor_last_step_time_ >= 2000) {
     this->step_pin_->digital_write(true);
-    esphome::delayMicroseconds((uint32_t)1000); // Pulse width
+    esphome::delayMicroseconds((uint32_t)1000);
     this->step_pin_->digital_write(false);
     this->motor_steps_remaining_--;
     this->motor_last_step_time_ = now;

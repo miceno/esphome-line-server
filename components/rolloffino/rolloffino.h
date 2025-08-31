@@ -97,4 +97,5 @@ protected:
     uint32_t motor_last_step_time_ = 0;
     // Movement timeout in microseconds
     uint32_t move_timeout = 10000000;
+    uint32_t motor_move_start_time_ = 0;
 };
