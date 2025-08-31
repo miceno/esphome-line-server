@@ -331,6 +331,7 @@ void RolloffinoComponent::handle_motor_() {
     if (this->motor_steps_remaining_ <= 0) {
       this->motor_active_ = false;
       this->motor_direction_ = MOTOR_NONE;
+      this->motor_abort_();
     }
   }
 }
