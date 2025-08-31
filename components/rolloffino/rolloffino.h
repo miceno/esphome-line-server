@@ -33,6 +33,8 @@ public:
     }
 		void set_opened_binary_sensor(binary_sensor::BinarySensor *sensor) { this->opened_binary_sensor_ = sensor; }
 		void set_closed_binary_sensor(binary_sensor::BinarySensor *sensor) { this->closed_binary_sensor_ = sensor; }
+		void set_direction_pin(GPIOPin *pin) { this->direction_pin_ = pin; }
+		void set_step_pin(GPIOPin *pin) { this->step_pin_ = pin; }
 
     void process_command(const std::string &command);
     void send_response(const std::string &response);
@@ -75,5 +77,8 @@ protected:
  protected:
   binary_sensor::BinarySensor *opened_binary_sensor_;
   binary_sensor::BinarySensor *closed_binary_sensor_;
+		GPIOPin *step_pin_;
+		GPIOPin *direction_pin_;
+
 
 };

@@ -1,11 +1,14 @@
 import esphome.codegen as cg
 import esphome.config_validation as cv
+from esphome import pins
 from esphome.components import binary_sensor
 from esphome.const import (
+    CONF_BUFFER_SIZE,
+    CONF_DIR_PIN,
     CONF_ID,
     CONF_PORT,
-    CONF_BUFFER_SIZE,
-    )
+    CONF_STEP_PIN,
+)
 
 CONF_TCP_BUFFER_SIZE = "tcp_buffer_size"
 CONF_TCP_TERMINATOR = "tcp_terminator"
@@ -55,6 +58,8 @@ CONFIG_SCHEMA = cv.All(
             cv.Required(CONF_OPENED_SENSOR): cv.use_id(binary_sensor.BinarySensor),
             cv.Required(CONF_CLOSED_SENSOR): cv.use_id(binary_sensor.BinarySensor),
 
+            cv.Required(CONF_STEP_PIN): pins.gpio_output_pin_schema,
+            cv.Required(CONF_DIR_PIN): pins.gpio_output_pin_schema,
         }
         )
     .extend(cv.COMPONENT_SCHEMA),
@@ -73,6 +78,11 @@ async def to_code(config):
 
     closed_sensor = await cg.get_variable(config[CONF_CLOSED_SENSOR])
     cg.add(var.set_closed_binary_sensor(closed_sensor))
+
+    step_pin = await cg.gpio_pin_expression(config[CONF_STEP_PIN])
+    cg.add(var.set_step_pin(step_pin))
+    direction_pin = await cg.gpio_pin_expression(config[CONF_DIR_PIN])
+    cg.add(var.set_dir_pin(direction_pin))
 
     if CONF_TCP_TIMEOUT_LAMBDA in config:
         tcp_lambda_ = await cg.process_lambda(

@@ -55,9 +55,9 @@ void RolloffinoComponent::dump_config() {
       esphome::format_hex_pretty((const uint8_t*)tcp_terminator_.data(), tcp_terminator_.size()).c_str());
   ESP_LOGCONFIG(TAG, "TCP flush timeout: %ums", tcp_flush_timeout_ms_);
   ESP_LOGCONFIG(TAG, "Opened sensor: %s", this->opened_binary_sensor_ != nullptr ? this->opened_binary_sensor_->get_object_id().c_str() : "None");
-  LOG_BINARY_SENSOR("  ", "Opened sensor:", this->opened_binary_sensor_);
+  LOG_BINARY_SENSOR("  Opened sensor:", this->opened_binary_sensor_);
   ESP_LOGCONFIG(TAG, "Closed sensor: %s", this->closed_binary_sensor_ != nullptr ? this->closed_binary_sensor_->get_object_id().c_str() : "None");
-  LOG_BINARY_SENSOR("  ", "Closed sensor:", this->closed_binary_sensor_);
+  LOG_BINARY_SENSOR("  Closed sensor:", this->closed_binary_sensor_);
 }
 
 void RolloffinoComponent::on_shutdown() {
@@ -203,10 +203,12 @@ void RolloffinoComponent::process_command(const std::string &command){
 	else if (command == "(SET:OPEN:0)"){
 		ESP_LOGD(TAG, "Open cover");
 		response = "(ACK:OPEN:ON)";
+		this->motor_open_();
 	}
 	else if (command == "(SET:CLOSE:0)"){
 		ESP_LOGD(TAG, "Close cover");
 		response = "(ACK:CLOSE:ON)";
+		this->motor_close_();
 	}
 	else if (command == "(GET:LOCKED:0)"){
 		ESP_LOGD(TAG, "Locked status");
@@ -215,6 +217,9 @@ void RolloffinoComponent::process_command(const std::string &command){
 	else if (command == "(GET:AUXSTATE:0)"){
 		ESP_LOGD(TAG, "Aux state");
 		response = "(ACK:AUXSTATE:OFF)";
+	} else {
+		ESP_LOGE(TAG, "Unknown command: %s", command.c_str());
+		response = "(NAK:ERROR:" + command + ")";
 	}
 
 	this->send_response(response);
