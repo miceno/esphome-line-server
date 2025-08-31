@@ -88,13 +88,11 @@ protected:
     void motor_open_();
     void motor_close_();
     void handle_motor_();
-    void motor_abort_(); // Immediately stop motor
+    void motor_abort_();
 
-    // Unified motor state for non-blocking operation
     MotorDirection motor_direction_ = MOTOR_NONE;
     bool motor_active_ = false;
-    int motor_steps_remaining_ = 0;
-    uint32_t motor_last_step_time_ = 0;
+    bool pwm_active_ = false;
     // Movement timeout in microseconds
     uint32_t move_timeout = 10000000;
     uint32_t motor_move_start_time_ = 0;

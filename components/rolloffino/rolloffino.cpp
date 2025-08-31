@@ -274,46 +274,50 @@ bool RolloffinoComponent::has_active_clients() const {
 }
 
 void RolloffinoComponent::motor_open_() {
-  // Start non-blocking open sequence
+  // Start non-blocking open sequence using PWM
   if (this->direction_pin_ != nullptr && this->step_pin_ != nullptr) {
-    // Set direction to open
     this->direction_pin_->digital_write(true);
     this->motor_direction_ = MOTOR_OPEN;
     this->motor_active_ = true;
-    this->motor_steps_remaining_ = 200;
-    this->motor_last_step_time_ = esphome::micros();
     this->motor_move_start_time_ = esphome::micros();
+    if (!this->pwm_active_) {
+      // 500 Hz, 50% duty cycle as example
+      this->step_pin_->set_pwm(500, 0.5f);
+      this->pwm_active_ = true;
+    }
   }
 }
 
 void RolloffinoComponent::motor_close_() {
-  // Start non-blocking close sequence
+  // Start non-blocking close sequence using PWM
   if (this->direction_pin_ != nullptr && this->step_pin_ != nullptr) {
-    // Set direction to close
     this->direction_pin_->digital_write(false);
     this->motor_direction_ = MOTOR_CLOSE;
     this->motor_active_ = true;
-    this->motor_steps_remaining_ = 200;
-    this->motor_last_step_time_ = esphome::micros();
     this->motor_move_start_time_ = esphome::micros();
+    if (!this->pwm_active_) {
+      // 500 Hz, 50% duty cycle as example
+      this->step_pin_->set_pwm(500, 0.5f);
+      this->pwm_active_ = true;
+    }
   }
 }
 
 void RolloffinoComponent::motor_abort_() {
   this->motor_active_ = false;
   this->motor_direction_ = MOTOR_NONE;
-  this->motor_steps_remaining_ = 0;
-  if (this->step_pin_ != nullptr)
-    this->step_pin_->digital_write(true);
+  if (this->step_pin_ != nullptr && this->pwm_active_) {
+    this->step_pin_->set_pwm(0, 0.0f);
+    this->pwm_active_ = false;
+  }
   if (this->direction_pin_ != nullptr)
     this->direction_pin_->digital_write(true);
 }
 
 void RolloffinoComponent::handle_motor_() {
-  if (!this->motor_active_ || this->motor_direction_ == MOTOR_NONE || this->motor_steps_remaining_ <= 0)
+  if (!this->motor_active_ || this->motor_direction_ == MOTOR_NONE)
     return;
 
-  // Abort if movement exceeds timeout
   uint32_t now = esphome::micros();
   if (now - this->motor_move_start_time_ > this->move_timeout) {
     this->motor_abort_();
@@ -321,21 +325,5 @@ void RolloffinoComponent::handle_motor_() {
     return;
   }
 
-  // Debug log for motor movement status
-  ESP_LOGD(TAG, "Motor movement active: direction=%d, steps_remaining=%d",
-           static_cast<int>(this->motor_direction_), this->motor_steps_remaining_);
-
-  // Step the motor if enough time has passed since last step
-  if (now - this->motor_last_step_time_ >= 2000) {
-    this->step_pin_->digital_write(true);
-    esphome::delayMicroseconds((uint32_t)1000);
-    this->step_pin_->digital_write(false);
-    this->motor_steps_remaining_--;
-    this->motor_last_step_time_ = now;
-    if (this->motor_steps_remaining_ <= 0) {
-      this->motor_active_ = false;
-      this->motor_direction_ = MOTOR_NONE;
-      this->motor_abort_();
-    }
-  }
+  ESP_LOGD(TAG, "Motor movement active: direction=%d", static_cast<int>(this->motor_direction_));
 }
