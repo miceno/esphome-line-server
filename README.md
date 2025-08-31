@@ -62,12 +62,8 @@ binary_sensor:
     
 rolloffino:
   port: 8888
-  left_motor:
-    enable_pin: D5
-    direction_pin: D6
-  right_motor:
-    enable_pin: D7
-    direction_pin: D8
+  dir_pin: D1
+  step_pin: D2
   opened_sensor: opened_binary_sensor
   closed_sensor: closed_binary_sensor
 ```

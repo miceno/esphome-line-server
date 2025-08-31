@@ -82,7 +82,7 @@ async def to_code(config):
     step_pin = await cg.gpio_pin_expression(config[CONF_STEP_PIN])
     cg.add(var.set_step_pin(step_pin))
     direction_pin = await cg.gpio_pin_expression(config[CONF_DIR_PIN])
-    cg.add(var.set_dir_pin(direction_pin))
+    cg.add(var.set_direction_pin(direction_pin))
 
     if CONF_TCP_TIMEOUT_LAMBDA in config:
         tcp_lambda_ = await cg.process_lambda(
