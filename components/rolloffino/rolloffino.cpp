@@ -321,6 +321,10 @@ void RolloffinoComponent::handle_motor_() {
     return;
   }
 
+  // Debug log for motor movement status
+  ESP_LOGD(TAG, "Motor movement active: direction=%d, steps_remaining=%d",
+           static_cast<int>(this->motor_direction_), this->motor_steps_remaining_);
+
   // Step the motor if enough time has passed since last step
   if (now - this->motor_last_step_time_ >= 2000) {
     this->step_pin_->digital_write(true);
