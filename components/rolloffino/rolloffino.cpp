@@ -303,6 +303,10 @@ void RolloffinoComponent::motor_abort_() {
   this->motor_active_ = false;
   this->motor_direction_ = MOTOR_NONE;
   this->motor_steps_remaining_ = 0;
+  if (this->step_pin_ != nullptr)
+    this->step_pin_->digital_write(true);
+  if (this->direction_pin_ != nullptr)
+    this->direction_pin_->digital_write(true);
 }
 
 void RolloffinoComponent::handle_motor_() {
