@@ -44,8 +44,10 @@ void RolloffinoComponent::setup() {
 
 void RolloffinoComponent::loop() {
   this->accept();
-  this->read();                  // TCP → buffer
-  this->flush_tcp_buffer();       // TCP buffer → processing
+  if (this->clients_.size() > 0){
+		  this->read();                   // TCP → buffer
+  		this->flush_tcp_buffer();       // buffer → processing
+  }
   this->cleanup();
   this->handle_motor_();          // Unified non-blocking motor steps
 }
