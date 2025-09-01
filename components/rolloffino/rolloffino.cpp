@@ -202,12 +202,12 @@ void RolloffinoComponent::process_command(const std::string &command){
 			response += "OFF)";
 		}
 	}
-	else if (command == "(SET:OPEN:0)"){
+	else if (command == "(SET:OPEN:ON)"){
 		ESP_LOGV(TAG, "Open cover");
 		response = "(ACK:OPEN:ON)";
 		this->motor_open_();
 	}
-	else if (command == "(SET:CLOSE:0)"){
+	else if (command == "(SET:CLOSE:ON)"){
 		ESP_LOGV(TAG, "Close cover");
 		response = "(ACK:CLOSE:ON)";
 		this->motor_close_();
