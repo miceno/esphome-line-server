@@ -84,7 +84,7 @@ void RolloffinoComponent::accept() {
 
     client_sock->setblocking(false);
     int enable = 1;
-    socket->setsockopt(IPPROTO_TCP, TCP_NODELAY, &enable, sizeof(int));
+    client_sock->setsockopt(IPPROTO_TCP, TCP_NODELAY, &enable, sizeof(int));
     std::string identifier = client_sock->getpeername();
     this->clients_.emplace_back(std::move(client_sock), identifier);
 
