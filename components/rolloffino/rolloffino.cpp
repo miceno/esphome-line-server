@@ -7,6 +7,7 @@
 #include "esphome/core/version.h"
 #include "esphome/components/network/util.h"
 #include "esphome/components/socket/socket.h"
+#include "esphome/components/socket/headers.h"
 
 using esphome::rolloffino::RingBuffer;
 using namespace esphome;
@@ -120,7 +121,7 @@ void RolloffinoComponent::read() {
                 if (written < static_cast<size_t>(len)) {
                     ESP_LOGW(TAG, "TCP buffer overflow — dropped %zu bytes", len - written);
                 }
-            } else if (len == 0 || errno == ECONNRESET) {
+            } else if (len == 0 || errno == ECONNRESET || errno == ENOTCONN) {
                 ESP_LOGD(TAG, "Client %s disconnected during read", client.identifier.c_str());
                 client.disconnected = true;
                 break;
@@ -158,7 +159,7 @@ void RolloffinoComponent::send_response(const std::string &response) {
 								response.size() - total_sent);
 						if (sent > 0) {
 								total_sent += sent;
-						} else if (sent == 0 || errno == ECONNRESET) {
+						} else if (sent == 0 || errno == ECONNRESET || errno == ENOTCONN) {
 								ESP_LOGD(TAG, "Client %s disconnected during write", client.identifier.c_str());
 								client.disconnected = true;
 								break;
