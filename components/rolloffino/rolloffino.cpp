@@ -125,7 +125,7 @@ void RolloffinoComponent::read() {
                 client.disconnected = true;
                 break;
             } else if (errno == EWOULDBLOCK || errno == EAGAIN) {
-                ESP_LOGW(TAG, "No more data available from this client");
+                ESP_LOGV(TAG, "No more data available from this client");
                 break;  // No more data available from this client
             } else {
                 ESP_LOGW(TAG, "Error reading from client %s: errno=%d", client.identifier.c_str(), errno);
