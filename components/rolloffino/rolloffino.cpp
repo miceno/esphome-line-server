@@ -45,11 +45,14 @@ void RolloffinoComponent::setup() {
 void RolloffinoComponent::loop() {
   this->accept();
   if (this->clients_.size() > 0){
-		  this->read();                   // TCP → buffer
-  		this->flush_tcp_buffer();       // buffer → processing
+      // TCP → buffer
+      this->read();
+      // buffer → processing
+      this->flush_tcp_buffer();
+      this->cleanup();
   }
-  this->cleanup();
-  this->handle_motor_();          // Unified non-blocking motor steps
+  // Unified non-blocking motor steps
+  this->handle_motor_();
 }
 
 void RolloffinoComponent::dump_config() {
@@ -143,42 +146,42 @@ void RolloffinoComponent::read() {
 }
 
 void RolloffinoComponent::send_response(const std::string &response) {
-		if (response.empty())
-				return;
+    if (response.empty())
+        return;
 
-		ESP_LOGD(TAG, "Send response %s", response.c_str());
-		// Send response to all connected clients
-		// Note: In a real application, you might want to send responses only to the
-		// client that sent the command or implement a more complex routing mechanism.
-		// Here, we broadcast to all connected clients for simplicity.
-		// Handle partial writes and disconnections
+    ESP_LOGD(TAG, "Send response %s", response.c_str());
+    // Send response to all connected clients
+    // Note: In a real application, you might want to send responses only to the
+    // client that sent the command or implement a more complex routing mechanism.
+    // Here, we broadcast to all connected clients for simplicity.
+    // Handle partial writes and disconnections
 
-		for (Client &client : this->clients_) {
-				if (client.disconnected)
-						continue;
+    for (Client &client : this->clients_) {
+        if (client.disconnected)
+            continue;
 
-				ssize_t total_sent = 0;
-				while (total_sent < static_cast<ssize_t>(response.size())) {
-						ssize_t sent = client.socket->write(
-								reinterpret_cast<const uint8_t *>(response.data()) + total_sent,
-								response.size() - total_sent);
-						if (sent > 0) {
-								total_sent += sent;
-						} else if (sent == 0 || errno == ECONNRESET || errno == ENOTCONN) {
-								ESP_LOGD(TAG, "Client %s disconnected during write", client.identifier.c_str());
-								client.disconnected = true;
-								break;
-						} else if (errno == EWOULDBLOCK || errno == EAGAIN) {
-								// Socket not ready for writing; could implement a retry mechanism here
-								ESP_LOGW(TAG, "Socket not ready for writing to client %s", client.identifier.c_str());
-								break;
-						} else {
-								ESP_LOGW(TAG, "Error writing to client %s: errno=%d", client.identifier.c_str(), errno);
-								client.disconnected = true;
-								break;
-						}
-				}
-		}
+        ssize_t total_sent = 0;
+        while (total_sent < static_cast<ssize_t>(response.size())) {
+            ssize_t sent = client.socket->write(
+                reinterpret_cast<const uint8_t *>(response.data()) + total_sent,
+                response.size() - total_sent);
+            if (sent > 0) {
+                total_sent += sent;
+            } else if (sent == 0 || errno == ECONNRESET || errno == ENOTCONN) {
+                ESP_LOGD(TAG, "Client %s disconnected during write", client.identifier.c_str());
+                client.disconnected = true;
+                break;
+            } else if (errno == EWOULDBLOCK || errno == EAGAIN) {
+                // Socket not ready for writing; could implement a retry mechanism here
+                ESP_LOGW(TAG, "Socket not ready for writing to client %s", client.identifier.c_str());
+                break;
+            } else {
+                ESP_LOGW(TAG, "Error writing to client %s: errno=%d", client.identifier.c_str(), errno);
+                client.disconnected = true;
+                break;
+            }
+        }
+    }
 }
 
 void RolloffinoComponent::process_command(const std::string &command){
@@ -283,35 +286,35 @@ bool RolloffinoComponent::has_active_clients() const {
 }
 
 void RolloffinoComponent::motor_open_() {
-	ESP_LOGD(TAG, "Opening motor");
-  // Start non-blocking open sequence using PWM
-  if (this->in1_pin_ != nullptr && this->in2_pin_ != nullptr) {
-    if (!this->pwm_active_) {
-      analogWrite(this->in1_pin_->get_pin(), map(this->duty_cycle_, 0, 100, 0, 255));  // NOLINT
-      this->pwm_active_ = true;
-    }
-    this->in2_pin_->digital_write(false);
+    ESP_LOGD(TAG, "Opening motor");
+    // Start non-blocking open sequence using PWM
+    if (this->in1_pin_ != nullptr && this->in2_pin_ != nullptr) {
+        if (!this->pwm_active_) {
+            analogWrite(this->in1_pin_->get_pin(), map(this->duty_cycle_, 0, 100, 0, 255));  // NOLINT
+            this->pwm_active_ = true;
+        }
+        this->in2_pin_->digital_write(false);
 
-    this->motor_direction_ = MOTOR_OPEN;
-    this->motor_active_ = true;
-    this->motor_move_start_time_ = esphome::micros();
-  }
+        this->motor_direction_ = MOTOR_OPEN;
+        this->motor_active_ = true;
+        this->motor_move_start_time_ = esphome::micros();
+    }
 }
 
 void RolloffinoComponent::motor_close_() {
-	ESP_LOGD(TAG, "Closing motor");
-  // Start non-blocking close sequence using PWM
-  if (this->in1_pin_ != nullptr && this->in2_pin_ != nullptr) {
-    this->in1_pin_->digital_write(false);
-    if (!this->pwm_active_) {
-      analogWrite(this->in2_pin_->get_pin(), map(this->duty_cycle_, 0, 100, 0, 255));  // NOLINT
-      this->pwm_active_ = true;
-    }
+    ESP_LOGD(TAG, "Closing motor");
+    // Start non-blocking close sequence using PWM
+    if (this->in1_pin_ != nullptr && this->in2_pin_ != nullptr) {
+        this->in1_pin_->digital_write(false);
+        if (!this->pwm_active_) {
+            analogWrite(this->in2_pin_->get_pin(), map(this->duty_cycle_, 0, 100, 0, 255));  // NOLINT
+            this->pwm_active_ = true;
+        }
 
-    this->motor_direction_ = MOTOR_CLOSE;
-    this->motor_active_ = true;
-    this->motor_move_start_time_ = esphome::micros();
-  }
+        this->motor_direction_ = MOTOR_CLOSE;
+        this->motor_active_ = true;
+        this->motor_move_start_time_ = esphome::micros();
+    }
 }
 
 void RolloffinoComponent::motor_abort_() {
