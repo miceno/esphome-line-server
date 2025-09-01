@@ -19,7 +19,7 @@ void RolloffinoComponent::setup() {
 
   if (!this->tcp_buf_) {
     this->tcp_buf_ = std::unique_ptr<RingBuffer>(new RingBuffer(tcp_buf_size_, tcp_terminator_));
-    ESP_LOGCONFIG(TAG, "TCP buffer was not set explicitly. Using default size %zu, terminator '%s'",
+    ESP_LOGCONFIG(TAG, "TCP buffer Using default size %zu, terminator '%s'",
              tcp_buf_size_, tcp_terminator_.c_str());
   }
 
@@ -85,7 +85,7 @@ void RolloffinoComponent::accept() {
     std::string identifier = client_sock->getpeername();
     this->clients_.emplace_back(std::move(client_sock), identifier);
 
-    ESP_LOGD(TAG, "New client connected from %s", identifier.c_str());
+    ESP_LOGD(TAG, "New client connected: %s", identifier.c_str());
     this->publish_sensor();
 }
 
@@ -125,6 +125,7 @@ void RolloffinoComponent::read() {
                 client.disconnected = true;
                 break;
             } else if (errno == EWOULDBLOCK || errno == EAGAIN) {
+                ESP_LOGW(TAG, "No more data available from this client");
                 break;  // No more data available from this client
             } else {
                 ESP_LOGW(TAG, "Error reading from client %s: errno=%d", client.identifier.c_str(), errno);
@@ -139,7 +140,7 @@ void RolloffinoComponent::send_response(const std::string &response) {
 		if (response.empty())
 				return;
 
-		ESP_LOGD(TAG, "Send message %s", response.c_str());
+		ESP_LOGD(TAG, "Send response %s", response.c_str());
 		// Send response to all connected clients
 		// Note: In a real application, you might want to send responses only to the
 		// client that sent the command or implement a more complex routing mechanism.
@@ -180,11 +181,11 @@ void RolloffinoComponent::process_command(const std::string &command){
 	std::string response;
 	// Process command here
 	if( command == "(CON:0:0)" ){
-		ESP_LOGD(TAG, "Connection request");
+		ESP_LOGV(TAG, "Connection request");
 		response = "(ACK:0:0)";
 	}
 	else if (command == "(GET:OPENED:0)"){
-		ESP_LOGD(TAG, "Opened status");
+		ESP_LOGV(TAG, "Opened status");
 		response = "(ACK:OPENED:";
 		if (this->opened_binary_sensor_ != nullptr && this->opened_binary_sensor_->state) {
 			response += "ON)";
@@ -193,7 +194,7 @@ void RolloffinoComponent::process_command(const std::string &command){
 		}
 	}
 	else if (command == "(GET:CLOSED:0)"){
-		ESP_LOGD(TAG, "Closed status");
+		ESP_LOGV(TAG, "Closed status");
 		response = "(ACK:CLOSED:";
 		if (this->closed_binary_sensor_ != nullptr && this->closed_binary_sensor_->state) {
 			response += "ON)";
@@ -202,21 +203,21 @@ void RolloffinoComponent::process_command(const std::string &command){
 		}
 	}
 	else if (command == "(SET:OPEN:0)"){
-		ESP_LOGD(TAG, "Open cover");
+		ESP_LOGV(TAG, "Open cover");
 		response = "(ACK:OPEN:ON)";
 		this->motor_open_();
 	}
 	else if (command == "(SET:CLOSE:0)"){
-		ESP_LOGD(TAG, "Close cover");
+		ESP_LOGV(TAG, "Close cover");
 		response = "(ACK:CLOSE:ON)";
 		this->motor_close_();
 	}
 	else if (command == "(GET:LOCKED:0)"){
-		ESP_LOGD(TAG, "Locked status");
+		ESP_LOGV(TAG, "Locked status");
 		response = "(ACK:LOCKED:OFF)";
 	}
 	else if (command == "(GET:AUXSTATE:0)"){
-		ESP_LOGD(TAG, "Aux state");
+		ESP_LOGV(TAG, "Aux state");
 		response = "(ACK:AUXSTATE:OFF)";
 	} else {
 		ESP_LOGE(TAG, "Unknown command: %s", command.c_str());
@@ -274,6 +275,7 @@ bool RolloffinoComponent::has_active_clients() const {
 }
 
 void RolloffinoComponent::motor_open_() {
+	ESP_LOGD(TAG, "Opening motor");
   // Start non-blocking open sequence using PWM
   if (this->in1_pin_ != nullptr && this->in2_pin_ != nullptr) {
     if (!this->pwm_active_) {
@@ -289,6 +291,7 @@ void RolloffinoComponent::motor_open_() {
 }
 
 void RolloffinoComponent::motor_close_() {
+	ESP_LOGD(TAG, "Closing motor");
   // Start non-blocking close sequence using PWM
   if (this->in1_pin_ != nullptr && this->in2_pin_ != nullptr) {
     this->in1_pin_->digital_write(false);
@@ -304,6 +307,8 @@ void RolloffinoComponent::motor_close_() {
 }
 
 void RolloffinoComponent::motor_abort_() {
+	ESP_LOGD(TAG, "Stopping motor");
+
   this->motor_active_ = false;
   this->motor_direction_ = MOTOR_NONE;
 	this->pwm_active_ = false;
