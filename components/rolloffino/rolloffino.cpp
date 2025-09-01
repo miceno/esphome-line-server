@@ -130,8 +130,9 @@ void RolloffinoComponent::read() {
                 client.disconnected = true;
                 break;
             } else if (errno == EWOULDBLOCK || errno == EAGAIN) {
+                // No more data available from this client
                 ESP_LOGV(TAG, "No more data available from this client");
-                break;  // No more data available from this client
+                break;
             } else {
                 ESP_LOGW(TAG, "Error reading from client %s: errno=%d", client.identifier.c_str(), errno);
                 client.disconnected = true;
@@ -253,7 +254,8 @@ void RolloffinoComponent::flush_tcp_buffer() {
         tcp_buf_->available() > 0) {
 
         if (this->tcp_timeout_callback_) {
-            std::string partial = tcp_buf_->read_partial();  // More appropriate than read_line()
+            // More appropriate than read_line()
+            std::string partial = tcp_buf_->read_partial();
             std::string processed = this->tcp_timeout_callback_(partial);
 
             if (!processed.empty()) {
@@ -266,7 +268,8 @@ void RolloffinoComponent::flush_tcp_buffer() {
             ESP_LOGW(TAG, "TCP input timed out without terminator — discarding partial: size=%zu", partial.size());
         }
 
-        tcp_buf_->clear();  // Always clear after timeout handling
+        // Always clear after timeout handling
+        tcp_buf_->clear();
     }
 }
 
