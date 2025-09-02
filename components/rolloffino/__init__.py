@@ -62,6 +62,7 @@ CONFIG_SCHEMA = cv.All(REQUIRES_ESPHOME_VERSION,
 
 
 async def to_code(config):
+    var = cg.new_Pvariable(config[CONF_ID])
     await tcp_server.register_tcp_server(var, config)
     await cg.register_component(var, config)
 
