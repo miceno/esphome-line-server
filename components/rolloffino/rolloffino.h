@@ -32,6 +32,8 @@ public:
 
     void dump_config() override;
 
+		void RolloffinoComponent::loop() override;
+
 protected:
     void handle_motor_();
     void motor_open_();
