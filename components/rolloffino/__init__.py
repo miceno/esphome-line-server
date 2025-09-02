@@ -70,7 +70,6 @@ async def to_code(config):
     _LOGGER.info("Rolloffino config: %s", config)
     var = cg.new_Pvariable(config[CONF_ID])
     await tcp_server.register_tcp_server(var, config)
-    # await cg.register_component(var, config)
 
     open_sensor = await cg.get_variable(config[CONF_OPENED_SENSOR])
     cg.add(var.set_opened_binary_sensor(open_sensor))
