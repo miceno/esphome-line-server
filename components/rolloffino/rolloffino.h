@@ -32,7 +32,7 @@ public:
 
     void dump_config() override;
 
-		void RolloffinoComponent::loop() override;
+		void loop() override;
 
 protected:
     void handle_motor_();
