@@ -49,6 +49,11 @@ TCP_SERVER_SCHEMA = cv.Schema(
 
 CONFIG_SCHEMA = cv.All(REQUIRES_ESPHOME_VERSION, TCP_SERVER_SCHEMA)
 
+async def new_tcp_server(config):
+    var = cg.new_Pvariable(config[CONF_ID])
+    await register_tcp_server(var, config)
+    return var
+
 async def register_tcp_server(var, config):
     # Only add the ID if present in config
     if CONF_ID in config:
