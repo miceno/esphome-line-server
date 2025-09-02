@@ -1,3 +1,5 @@
+import logging
+
 import esphome.codegen as cg
 import esphome.config_validation as cv
 from esphome import pins
@@ -8,6 +10,8 @@ from esphome.const import (
     CONF_PORT,
 )
 import esphome.components.tcp_server as tcp_server
+
+_LOGGER = logging.getLogger(__name__)
 
 CONF_IN1_PIN = "in1"
 CONF_IN2_PIN = "in2"
@@ -63,6 +67,7 @@ CONFIG_SCHEMA = cv.All(REQUIRES_ESPHOME_VERSION, ROLLOFFINO_SCHEMA.schema)
 
 
 async def to_code(config):
+    _LOGGER.info("Rolloffino config: %s", config)
     var = cg.new_Pvariable(config[CONF_ID])
     await cg.register_component(var, config)
 

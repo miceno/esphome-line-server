@@ -1,3 +1,5 @@
+import logging
+
 import esphome.codegen as cg
 import esphome.config_validation as cv
 from esphome import pins
@@ -8,6 +10,8 @@ from esphome.const import (
     CONF_PORT,
 )
 from esphome.core import CORE
+
+_LOGGER = logging.getLogger(__name__)
 
 CONF_TCP_BUFFER_SIZE = "tcp_buffer_size"
 CONF_TCP_TERMINATOR = "tcp_terminator"
@@ -54,12 +58,14 @@ TCP_SERVER_SCHEMA = cv.Schema(
 CONFIG_SCHEMA = cv.All(REQUIRES_ESPHOME_VERSION, TCP_SERVER_SCHEMA)
 
 async def new_tcp_server(config, *args):
+    _LOGGER("Creating new TCP Server: %s", config[CONF_ID])
     var = cg.new_Pvariable(config[CONF_ID], *args)
     await register_tcp_server(var, config)
     return var
 
 async def register_tcp_server(var, config):
-    # Only add the ID if present in config
+    _LOGGER.info("Registering TCP Server: %s", config[CONF_ID])
+    # Only add the ID if it is not present in config
     if not CORE.has_id(config[CONF_ID]):
         var = cg.Pvariable(config[CONF_ID], var)
     cg.add(var.set_port(config[CONF_PORT]))
