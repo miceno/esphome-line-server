@@ -27,7 +27,8 @@ DEPENDENCIES = ["network"]
 
 MULTI_CONF = True
 
-RolloffinoComponent = cg.global_ns.class_("RolloffinoComponent",
+rolloffino_ns = cg.esphome_ns.namespace("rolloffino")
+RolloffinoComponent = cg.rolloffino_ns.class_("RolloffinoComponent",
                                           tcp_server.TCPServerComponent,
                                           cg.Component)
 
