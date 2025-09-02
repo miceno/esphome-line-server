@@ -6,7 +6,7 @@
 #include <string>
 
 namespace esphome {
-    namespace rolloffino {
+    namespace tcp_server {
 
         class RingBuffer {
         public:
@@ -43,5 +43,5 @@ namespace esphome {
             uint32_t last_write_time_ = 0;
         };
 
-    }  // namespace rolloffino
+    }  // namespace tcp_server
 }  // namespace esphome

@@ -1,9 +1,9 @@
-#include "esphome/components/rolloffino/ring_buffer.h"
+#include "esphome/components/tcp_server/ring_buffer.h"
 
 #include "esphome/core/hal.h"
 
 namespace esphome {
-  namespace rolloffino {
+  namespace tcp_server {
 
     RingBuffer::RingBuffer(size_t size, const std::string &terminator)
         : size_(size), buf_(new uint8_t[size]), terminator_(terminator) {}
@@ -124,5 +124,5 @@ namespace esphome {
       return pos % size_;
     }
 
-  }  // namespace rolloffino
+  }  // namespace tcp_server
 }  // namespace esphome
