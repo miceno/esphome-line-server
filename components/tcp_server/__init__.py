@@ -57,14 +57,7 @@ TCP_SERVER_SCHEMA = cv.Schema(
 
 CONFIG_SCHEMA = cv.All(REQUIRES_ESPHOME_VERSION, TCP_SERVER_SCHEMA)
 
-async def new_tcp_server(config, *args):
-    _LOGGER("Creating new TCP Server: %s", config[CONF_ID])
-    var = cg.new_Pvariable(config[CONF_ID], *args)
-    await register_tcp_server(var, config)
-    return var
-
 async def register_tcp_server(var, config):
-    _LOGGER.info("Registering TCP Server: %s", config[CONF_ID])
     # Only add the ID if it is not present in config
     if not CORE.has_id(config[CONF_ID]):
         var = cg.Pvariable(config[CONF_ID], var)
