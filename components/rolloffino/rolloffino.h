@@ -17,6 +17,9 @@
 using esphome::rolloffino::RingBuffer;
 using namespace esphome;
 
+namespace esphome {
+		namespace rolloffino {
+
 class RolloffinoComponent : public TCPServerComponent {
 public:
     void set_duty_cycle(uint16_t duty_cycle) { duty_cycle_ = duty_cycle; }
@@ -58,3 +61,6 @@ protected:
     uint32_t move_timeout = 10000000;
     uint32_t motor_move_start_time_ = 0;
 };
+
+		}  // namespace rolloffino
+}  // namespace esphome

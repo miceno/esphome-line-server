@@ -13,6 +13,9 @@
 using esphome::tcp_server::RingBuffer;
 using namespace esphome;
 
+namespace esphome {
+    namespace tcp_server {
+
 class TCPServerComponent : public esphome::Component {
 public:
     void set_port(uint16_t port) { port_ = port; }
@@ -57,3 +60,6 @@ protected:
     std::vector<Client> clients_;
     bool has_active_clients() const;
 };
+
+  }  // namespace tcp_server
+}  // namespace esphome

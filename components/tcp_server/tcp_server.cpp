@@ -8,6 +8,9 @@
 
 using namespace esphome;
 
+namespace esphome {
+    namespace tcp_server {
+
 static const char *const TAG = "tcp_server";
 
 void TCPServerComponent::setup() {
@@ -183,3 +186,5 @@ bool TCPServerComponent::has_active_clients() const {
   }
   return false;
 }
+  }  // namespace tcp_server
+}  // namespace esphome

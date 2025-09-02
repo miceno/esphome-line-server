@@ -13,6 +13,8 @@
 using esphome::tcp_server::RingBuffer;
 using namespace esphome;
 
+namespace esphome {
+	namespace rolloffino {
 static const char *const TAG = "rolloffino";
 static const char *const VERSION = "V1.7-esp-wifimanager-magnet-DRV8871";
 
@@ -343,3 +345,6 @@ void RolloffinoComponent::handle_motor_() {
     return;
   }
 }
+
+	}  // namespace rolloffino
+}  // namespace esphome
