@@ -11,8 +11,8 @@
 #include "esphome/core/helpers.h"
 #include "esphome/components/binary_sensor/binary_sensor.h"
 #include "esphome/components/socket/socket.h"
-#include "esphome/components/tcp_server/ring_buffer.h"
-#include "esphome/components/tcp_server/tcp_server.h"
+#include "../tcp_server/ring_buffer.h"
+#include "../tcp_server/tcp_server.h"
 
 using esphome::rolloffino::RingBuffer;
 using namespace esphome;
