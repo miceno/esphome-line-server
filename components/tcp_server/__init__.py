@@ -57,7 +57,7 @@ async def new_tcp_server(config):
 async def register_tcp_server(var, config):
     # Only add the ID if present in config
     if CONF_ID in config:
-        var = cg.new_Pvariable(config[CONF_ID])
+        var = cg.Pvariable(config[CONF_ID], var)
     cg.add(var.set_port(config[CONF_PORT]))
     cg.add(var.set_tcp_buffer_size(config[CONF_TCP_BUFFER_SIZE]))
     cg.add(var.set_tcp_terminator(config[CONF_TCP_TERMINATOR]))
