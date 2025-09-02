@@ -20,7 +20,7 @@ using namespace esphome;
 namespace esphome {
 		namespace rolloffino {
 
-class RolloffinoComponent : public TCPServerComponent {
+class RolloffinoComponent : public tcp_server::TCPServerComponent {
 public:
     void set_duty_cycle(uint16_t duty_cycle) { duty_cycle_ = duty_cycle; }
     void set_opened_binary_sensor(binary_sensor::BinarySensor *sensor) { this->opened_binary_sensor_ = sensor; }
