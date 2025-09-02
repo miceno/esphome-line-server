@@ -55,7 +55,7 @@ ROLLOFFINO_SCHEMA = cv.Schema({
     cv.Optional(CONF_DUTY_CYCLE, default="100"): cv.int_range(min=0, max=100),
 })
 # Compose the final schema by extending the base tcp_server schema
-CONFIG_SCHEMA = cv.All(REQUIRES_ESPHOME_VERSION, tcp_server.CONFIG_SCHEMA.extend(ROLLOFFINO_SCHEMA.schema))
+CONFIG_SCHEMA = cv.All(REQUIRES_ESPHOME_VERSION, tcp_server.TCP_SERVER_SCHEMA.extend(ROLLOFFINO_SCHEMA.schema))
 
 
 async def to_code(config):
