@@ -11,8 +11,6 @@ from esphome.const import (
 )
 from esphome.core import CORE
 
-_LOGGER = logging.getLogger(__name__)
-
 CONF_TCP_BUFFER_SIZE = "tcp_buffer_size"
 CONF_TCP_TERMINATOR = "tcp_terminator"
 CONF_TCP_TIMEOUT = "tcp_timeout"

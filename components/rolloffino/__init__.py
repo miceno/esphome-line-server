@@ -11,8 +11,6 @@ from esphome.const import (
 )
 import esphome.components.tcp_server as tcp_server
 
-_LOGGER = logging.getLogger(__name__)
-
 CONF_IN1_PIN = "in1"
 CONF_IN2_PIN = "in2"
 CONF_DUTY_CYCLE = "duty_cycle"
@@ -67,7 +65,6 @@ CONFIG_SCHEMA = cv.All(REQUIRES_ESPHOME_VERSION, ROLLOFFINO_SCHEMA.schema)
 
 
 async def to_code(config):
-    _LOGGER.info("Rolloffino config: %s", config)
     # Create the new RolloffinoComponent instance
     var = cg.new_Pvariable(config[CONF_ID])
     # Setup the parent component
