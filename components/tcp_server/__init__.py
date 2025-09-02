@@ -7,6 +7,7 @@ from esphome.const import (
     CONF_ID,
     CONF_PORT,
 )
+from esphome.core import CORE
 
 CONF_TCP_BUFFER_SIZE = "tcp_buffer_size"
 CONF_TCP_TERMINATOR = "tcp_terminator"
@@ -51,14 +52,14 @@ TCP_SERVER_SCHEMA = cv.Schema(
 
 CONFIG_SCHEMA = cv.All(REQUIRES_ESPHOME_VERSION, TCP_SERVER_SCHEMA)
 
-async def new_tcp_server(config):
-    var = cg.new_Pvariable(config[CONF_ID])
+async def new_tcp_server(config, *args):
+    var = cg.new_Pvariable(config[CONF_ID], *args)
     await register_tcp_server(var, config)
     return var
 
 async def register_tcp_server(var, config):
     # Only add the ID if present in config
-    if CONF_ID in config:
+    if not CORE.has_id(config[CONF_ID]):
         var = cg.Pvariable(config[CONF_ID], var)
     cg.add(var.set_port(config[CONF_PORT]))
     cg.add(var.set_tcp_buffer_size(config[CONF_TCP_BUFFER_SIZE]))
@@ -73,6 +74,7 @@ async def register_tcp_server(var, config):
         cg.add(var.set_tcp_timeout_callback(tcp_lambda_))
     # await cg.register_component(var, config)
     return var
+
 
 async def to_code(config):
     cg.add_global(tcp_server_ns.using)
