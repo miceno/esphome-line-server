@@ -17,6 +17,7 @@ CONF_TCP_TIMEOUT_LAMBDA = "tcp_timeout_lambda"
 AUTO_LOAD = ["socket"]
 DEPENDENCIES = ["network"]
 MULTI_CONF = True
+MULTI_CONF_NO_DEFAULT = True
 
 tcp_server_ns = cg.esphome_ns.namespace("tcp_server")
 TCPServerComponent = tcp_server_ns.class_("TCPServerComponent", cg.Component)
