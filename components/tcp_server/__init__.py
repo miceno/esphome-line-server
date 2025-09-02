@@ -72,6 +72,7 @@ async def register_tcp_server(var, config):
             return_type=cg.std_string,
         )
         cg.add(var.set_tcp_timeout_callback(tcp_lambda_))
+    await cg.register_component(var, config)
     return var
 
 
