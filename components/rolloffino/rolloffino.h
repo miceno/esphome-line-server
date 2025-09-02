@@ -14,7 +14,7 @@
 #include "../tcp_server/ring_buffer.h"
 #include "../tcp_server/tcp_server.h"
 
-using esphome::rolloffino::RingBuffer;
+using esphome::tcp_server::RingBuffer;
 using namespace esphome;
 
 namespace esphome {
