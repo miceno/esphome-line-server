@@ -50,8 +50,6 @@ def validate_terminator(value):
 REQUIRES_ESPHOME_VERSION = cv.require_esphome_version(2022, 3, 0)
 # Validate only the rolloffino-specific schema additions
 ROLLOFFINO_SCHEMA = cv.Schema({
-    cv.Required(CONF_ID): cv.declare_id(RolloffinoComponent),
-
     cv.Required(CONF_OPENED_SENSOR): cv.use_id(binary_sensor.BinarySensor),
     cv.Required(CONF_CLOSED_SENSOR): cv.use_id(binary_sensor.BinarySensor),
     cv.Required(CONF_IN1_PIN): pins.internal_gpio_output_pin_schema,
@@ -64,9 +62,8 @@ CONFIG_SCHEMA = cv.All(REQUIRES_ESPHOME_VERSION,
 
 
 async def to_code(config):
-    var = cg.new_Pvariable(config[CONF_ID])
     await tcp_server.register_tcp_server(var, config)
-    # await cg.register_component(var, config)
+    await cg.register_component(var, config)
 
     open_sensor = await cg.get_variable(config[CONF_OPENED_SENSOR])
     cg.add(var.set_opened_binary_sensor(open_sensor))
