@@ -70,8 +70,8 @@ async def to_code(config):
     _LOGGER.info("Rolloffino config: %s", config)
     # Create the new RolloffinoComponent instance
     var = cg.new_Pvariable(config[CONF_ID])
-    # Register it as a component
-    await tcp_server.register_tcp_server(var, config)
+    # Setup the parent component
+    await tcp_server.setup_tcp_server(var, config)
 
     open_sensor = await cg.get_variable(config[CONF_OPENED_SENSOR])
     cg.add(var.set_opened_binary_sensor(open_sensor))
