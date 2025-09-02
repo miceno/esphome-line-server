@@ -91,6 +91,7 @@ void RolloffinoComponent::accept() {
     }
 
     client_sock->setblocking(false);
+    // Use TCP_NODELAY to disable Nagle's algorithm for lower latency
     int enable = 1;
     client_sock->setsockopt(IPPROTO_TCP, TCP_NODELAY, &enable, sizeof(int));
     std::string identifier = client_sock->getpeername();
