@@ -27,7 +27,9 @@ DEPENDENCIES = ["network"]
 
 MULTI_CONF = True
 
-RolloffinoComponent = cg.global_ns.class_("RolloffinoComponent", tcp_server.TCPServerComponent)
+RolloffinoComponent = cg.global_ns.class_("RolloffinoComponent",
+                                          tcp_server.TCPServerComponent,
+                                          cg.Component)
 
 
 def validate_buffer_size(buffer_size):
@@ -60,7 +62,9 @@ CONFIG_SCHEMA = cv.All(REQUIRES_ESPHOME_VERSION, tcp_server.TCP_SERVER_SCHEMA.ex
 
 async def to_code(config):
     var = cg.new_Pvariable(config[CONF_ID])
-    await tcp_server.to_code(config)
+    await cg.register_component(var, config)
+    await tcp_server.register_tcp_server(var, config)
+
     open_sensor = await cg.get_variable(config[CONF_OPENED_SENSOR])
     cg.add(var.set_opened_binary_sensor(open_sensor))
     closed_sensor = await cg.get_variable(config[CONF_CLOSED_SENSOR])
@@ -70,4 +74,3 @@ async def to_code(config):
     cg.add(var.set_in1_pin(in1_pin))
     in2_pin = await cg.gpio_pin_expression(config[CONF_IN2_PIN])
     cg.add(var.set_in2_pin(in2_pin))
-    await cg.register_component(var, config)

@@ -17,8 +17,8 @@ AUTO_LOAD = ["socket"]
 DEPENDENCIES = ["network"]
 MULTI_CONF = True
 
-ns = cg.global_ns
-TCPServerComponent = ns.class_("TCPServerComponent", cg.Component)
+tcp_server_ns = cg.esphome_ns.namespace("tcp_server")
+TCPServerComponent = tcp_server_ns.class_("TCPServerComponent", cg.Component)
 
 def validate_buffer_size(buffer_size):
     if buffer_size & (buffer_size - 1) != 0:
@@ -49,8 +49,10 @@ TCP_SERVER_SCHEMA = cv.Schema(
 
 CONFIG_SCHEMA = cv.All(REQUIRES_ESPHOME_VERSION, TCP_SERVER_SCHEMA)
 
-async def to_code(config):
-    var = cg.new_Pvariable(config[CONF_ID])
+async def register_tcp_server(var, config):
+    # Only add the ID if present in config
+    if CONF_ID in config:
+        var = cg.new_Pvariable(config[CONF_ID])
     cg.add(var.set_port(config[CONF_PORT]))
     cg.add(var.set_tcp_buffer_size(config[CONF_TCP_BUFFER_SIZE]))
     cg.add(var.set_tcp_terminator(config[CONF_TCP_TERMINATOR]))
@@ -63,3 +65,7 @@ async def to_code(config):
         )
         cg.add(var.set_tcp_timeout_callback(tcp_lambda_))
     await cg.register_component(var, config)
+    return var
+
+async def to_code(config):
+    cg.add_global(tcp_server_ns.using)
