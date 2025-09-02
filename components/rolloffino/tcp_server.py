@@ -29,8 +29,8 @@ MULTI_CONF = True
 
 rolloffino_ns = cg.esphome_ns.namespace("rolloffino")
 RolloffinoComponent = cg.rolloffino_ns.class_("RolloffinoComponent",
-                                          tcp_server.TCPServerComponent,
-                                          cg.Component)
+                                              tcp_server.TCPServerComponent,
+                                              cg.Component)
 
 
 def validate_buffer_size(buffer_size):
@@ -58,7 +58,8 @@ ROLLOFFINO_SCHEMA = cv.Schema({
     cv.Optional(CONF_DUTY_CYCLE, default="100"): cv.int_range(min=0, max=100),
 })
 # Compose the final schema by extending the base tcp_server schema
-CONFIG_SCHEMA = cv.All(REQUIRES_ESPHOME_VERSION, tcp_server.TCP_SERVER_SCHEMA.extend(ROLLOFFINO_SCHEMA.schema))
+CONFIG_SCHEMA = cv.All(REQUIRES_ESPHOME_VERSION,
+                       tcp_server.TCP_SERVER_SCHEMA.extend(ROLLOFFINO_SCHEMA.schema))
 
 
 async def to_code(config):
