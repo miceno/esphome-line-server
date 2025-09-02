@@ -18,33 +18,6 @@ namespace esphome {
 static const char *const TAG = "rolloffino";
 static const char *const VERSION = "V1.7-esp-wifimanager-magnet-DRV8871";
 
-void RolloffinoComponent::setup() {
-  ESP_LOGCONFIG(TAG, "Setting up rollofino...");
-
-  if (!this->tcp_buf_) {
-    this->tcp_buf_ = std::unique_ptr<RingBuffer>(new RingBuffer(tcp_buf_size_, tcp_terminator_));
-    ESP_LOGCONFIG(TAG, "TCP buffer Using default size %zu, terminator '%s'",
-             tcp_buf_size_, tcp_terminator_.c_str());
-  }
-
-  // Setup TCP socket server
-  struct sockaddr_storage bind_addr;
-#if ESPHOME_VERSION_CODE >= VERSION_CODE(2023, 4, 0)
-  socklen_t bind_addrlen = socket::set_sockaddr_any(
-      reinterpret_cast<struct sockaddr *>(&bind_addr), sizeof(bind_addr), this->port_);
-#else
-  socklen_t bind_addrlen = socket::set_sockaddr_any(
-      reinterpret_cast<struct sockaddr *>(&bind_addr), sizeof(bind_addr), htons(this->port_));
-#endif
-
-  this->socket_ = socket::socket_ip(SOCK_STREAM, PF_INET);
-  this->socket_->setblocking(false);
-  this->socket_->bind(reinterpret_cast<struct sockaddr *>(&bind_addr), bind_addrlen);
-  this->socket_->listen(8);
-
-  this->publish_sensor();
-}
-
 void RolloffinoComponent::loop() {
   this->accept();
   if (this->clients_.size() > 0){
@@ -59,134 +32,12 @@ void RolloffinoComponent::loop() {
 }
 
 void RolloffinoComponent::dump_config() {
-  ESP_LOGCONFIG(TAG, "Listening on: %s:%u", esphome::network::get_use_address().c_str(), this->port_);
-  ESP_LOGCONFIG(TAG, "TCP buffer: size=%zu, terminator=%s",
-      tcp_buf_size_,
-      esphome::format_hex_pretty((const uint8_t*)tcp_terminator_.data(), tcp_terminator_.size()).c_str());
-  ESP_LOGCONFIG(TAG, "TCP flush timeout: %ums", tcp_flush_timeout_ms_);
   ESP_LOGCONFIG(TAG, "Opened sensor: %s", this->opened_binary_sensor_ != nullptr ? this->opened_binary_sensor_->get_object_id().c_str() : "None");
   LOG_BINARY_SENSOR("  ", "Opened sensor:", this->opened_binary_sensor_);
   ESP_LOGCONFIG(TAG, "Closed sensor: %s", this->closed_binary_sensor_ != nullptr ? this->closed_binary_sensor_->get_object_id().c_str() : "None");
   LOG_BINARY_SENSOR("  ", "Closed sensor:", this->closed_binary_sensor_);
 }
 
-void RolloffinoComponent::on_shutdown() {
-  for (const Client &client : this->clients_)
-    client.socket->shutdown(SHUT_RDWR);
-}
-
-void RolloffinoComponent::publish_sensor() {
-}
-
-void RolloffinoComponent::accept() {
-    struct sockaddr_storage client_addr;
-    socklen_t client_addrlen = sizeof(client_addr);
-    std::unique_ptr<socket::Socket> client_sock =
-        this->socket_->accept(reinterpret_cast<struct sockaddr *>(&client_addr), &client_addrlen);
-    if (!client_sock)
-        return;
-
-    if (!this->has_active_clients()) {
-        ESP_LOGW(TAG, "No active clients connected");
-    }
-
-    client_sock->setblocking(false);
-    // Use TCP_NODELAY to disable Nagle's algorithm for lower latency
-    int enable = 1;
-    client_sock->setsockopt(IPPROTO_TCP, TCP_NODELAY, &enable, sizeof(int));
-    std::string identifier = client_sock->getpeername();
-    this->clients_.emplace_back(std::move(client_sock), identifier);
-
-    ESP_LOGD(TAG, "New client connected: %s", identifier.c_str());
-    this->publish_sensor();
-}
-
-void RolloffinoComponent::cleanup() {
-  auto active = [](const Client &c) { return !c.disconnected; };
-  auto cutoff = std::partition(this->clients_.begin(), this->clients_.end(), active);
-  if (cutoff != this->clients_.end()) {
-    this->clients_.erase(cutoff, this->clients_.end());
-    this->publish_sensor();
-  }
-}
-
-/**
- * Read data from all connected clients and writes to the TCP buffer.
- * Handles disconnections and read errors gracefully.
- */
-void RolloffinoComponent::read() {
-    if (!this->tcp_buf_)
-        return;
-
-    constexpr size_t buf_size = 128;
-    uint8_t temp[buf_size];
-
-    for (Client &client : this->clients_) {
-        if (client.disconnected)
-            continue;
-
-        while (true) {
-            ssize_t len = client.socket->read(temp, buf_size);
-            if (len > 0) {
-                size_t written = this->tcp_buf_->write_array(temp, len);
-                if (written < static_cast<size_t>(len)) {
-                    ESP_LOGW(TAG, "TCP buffer overflow — dropped %zu bytes", len - written);
-                }
-            } else if (len == 0 || errno == ECONNRESET || errno == ENOTCONN) {
-                ESP_LOGD(TAG, "Client %s disconnected during read", client.identifier.c_str());
-                client.disconnected = true;
-                break;
-            } else if (errno == EWOULDBLOCK || errno == EAGAIN) {
-                // No more data available from this client
-                ESP_LOGV(TAG, "No more data available from this client");
-                break;
-            } else {
-                ESP_LOGW(TAG, "Error reading from client %s: errno=%d", client.identifier.c_str(), errno);
-                client.disconnected = true;
-                break;
-            }
-        }
-    }
-}
-
-void RolloffinoComponent::send_response(const std::string &response) {
-    if (response.empty())
-        return;
-
-    ESP_LOGD(TAG, "Send response %s", response.c_str());
-    // Send response to all connected clients
-    // Note: In a real application, you might want to send responses only to the
-    // client that sent the command or implement a more complex routing mechanism.
-    // Here, we broadcast to all connected clients for simplicity.
-    // Handle partial writes and disconnections
-
-    for (Client &client : this->clients_) {
-        if (client.disconnected)
-            continue;
-
-        ssize_t total_sent = 0;
-        while (total_sent < static_cast<ssize_t>(response.size())) {
-            ssize_t sent = client.socket->write(
-                reinterpret_cast<const uint8_t *>(response.data()) + total_sent,
-                response.size() - total_sent);
-            if (sent > 0) {
-                total_sent += sent;
-            } else if (sent == 0 || errno == ECONNRESET || errno == ENOTCONN) {
-                ESP_LOGD(TAG, "Client %s disconnected during write", client.identifier.c_str());
-                client.disconnected = true;
-                break;
-            } else if (errno == EWOULDBLOCK || errno == EAGAIN) {
-                // Socket not ready for writing; could implement a retry mechanism here
-                ESP_LOGW(TAG, "Socket not ready for writing to client %s", client.identifier.c_str());
-                break;
-            } else {
-                ESP_LOGW(TAG, "Error writing to client %s: errno=%d", client.identifier.c_str(), errno);
-                client.disconnected = true;
-                break;
-            }
-        }
-    }
-}
 
 void RolloffinoComponent::process_command(const std::string &command){
 	ESP_LOGD(TAG, "Command is %s", command.c_str());
@@ -238,55 +89,6 @@ void RolloffinoComponent::process_command(const std::string &command){
 	}
 
 	this->send_response(response);
-}
-
-void RolloffinoComponent::flush_tcp_buffer() {
-    if (!this->tcp_buf_)
-        return;
-
-    const uint32_t now = esphome::millis();
-
-    // Step 1: send complete lines ending in terminator
-    while (true) {
-        std::string command = this->tcp_buf_->read_line();
-        if (command.empty())
-            break;
-
-        this->process_command(command);
-    }
-
-    // Step 2: handle stale partials
-    if (this->tcp_flush_timeout_ms_ > 0 &&
-        (now - tcp_buf_->last_write_time()) >= this->tcp_flush_timeout_ms_ &&
-        tcp_buf_->available() > 0) {
-
-        if (this->tcp_timeout_callback_) {
-            // More appropriate than read_line()
-            std::string partial = tcp_buf_->read_partial();
-            std::string processed = this->tcp_timeout_callback_(partial);
-
-            if (!processed.empty()) {
-                ESP_LOGW(TAG, "TCP [timeout flush]: \"%s\"", processed.c_str());
-            } else {
-                ESP_LOGW(TAG, "TCP input timed out and was discarded by lambda");
-            }
-        } else {
-            std::string partial = tcp_buf_->read_partial();
-            ESP_LOGW(TAG, "TCP input timed out without terminator — discarding partial: size=%zu", partial.size());
-        }
-
-        // Always clear after timeout handling
-        tcp_buf_->clear();
-    }
-}
-
-
-bool RolloffinoComponent::has_active_clients() const {
-  for (const auto &client : this->clients_) {
-    if (!client.disconnected)
-      return true;
-  }
-  return false;
 }
 
 void RolloffinoComponent::motor_open_() {

@@ -30,14 +30,9 @@ public:
 
     void process_command(const std::string &command) override;
 
-    void setup() override;
-    void loop() override;
     void dump_config() override;
-    void on_shutdown() override;
-    float get_setup_priority() const override { return esphome::setup_priority::AFTER_WIFI; }
 
 protected:
-    void publish_sensor();
     void handle_motor_();
     void motor_open_();
     void motor_close_();
