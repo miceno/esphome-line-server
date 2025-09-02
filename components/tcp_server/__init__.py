@@ -31,21 +31,24 @@ def validate_terminator(value):
         raise cv.Invalid("Terminator must be <= 4 bytes")
     return value
 
-CONFIG_SCHEMA = cv.All(
-    cv.require_esphome_version(2022, 3, 0),
-    cv.Schema(
-        {
-            cv.GenerateID(): cv.declare_id(TCPServerComponent),
-            cv.Optional(CONF_PORT, default=8888): cv.port,
-            cv.Optional(CONF_TCP_BUFFER_SIZE, default=256): cv.All(
-                cv.positive_int, validate_buffer_size
-            ),
-            cv.Optional(CONF_TCP_TERMINATOR, default="\r"): validate_terminator,
-            cv.Optional(CONF_TCP_TIMEOUT, default="300ms"): cv.positive_time_period_milliseconds,
-            cv.Optional(CONF_TCP_TIMEOUT_LAMBDA): cv.returning_lambda,
-        }
-    ).extend(cv.COMPONENT_SCHEMA),
-)
+# Validate ESPHome version
+REQUIRES_ESPHOME_VERSION = cv.require_esphome_version(2022, 3, 0)
+
+# Validate component schema
+TCP_SERVER_SCHEMA = cv.Schema(
+    {
+        cv.GenerateID(): cv.declare_id(TCPServerComponent),
+        cv.Optional(CONF_PORT, default=8888): cv.port,
+        cv.Optional(CONF_TCP_BUFFER_SIZE, default=256): cv.All(
+            cv.positive_int, validate_buffer_size
+        ),
+        cv.Optional(CONF_TCP_TERMINATOR, default="\r"): validate_terminator,
+        cv.Optional(CONF_TCP_TIMEOUT, default="300ms"): cv.positive_time_period_milliseconds,
+        cv.Optional(CONF_TCP_TIMEOUT_LAMBDA): cv.returning_lambda,
+    }
+).extend(cv.COMPONENT_SCHEMA)
+
+CONFIG_SCHEMA = cv.All(REQUIRES_ESPHOME_VERSION, TCP_SERVER_SCHEMA)
 
 async def to_code(config):
     var = cg.new_Pvariable(config[CONF_ID])
@@ -61,4 +64,3 @@ async def to_code(config):
         )
         cg.add(var.set_tcp_timeout_callback(tcp_lambda_))
     await cg.register_component(var, config)
-

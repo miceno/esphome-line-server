@@ -43,26 +43,19 @@ def validate_terminator(value):
     return value
 
 
-CONFIG_SCHEMA = tcp_server.CONFIG_SCHEMA.extend(
-    {
-        cv.GenerateID(): cv.declare_id(RolloffinoComponent),
-        cv.Optional(CONF_PORT, default=8888): cv.port,
-
-        cv.Optional(CONF_TCP_BUFFER_SIZE, default=256): cv.All(
-            cv.positive_int, validate_buffer_size
-            ),
-        cv.Optional(CONF_TCP_TERMINATOR, default="\r"): validate_terminator,
-        cv.Optional(CONF_TCP_TIMEOUT, default="300ms"): cv.positive_time_period_milliseconds,
-        cv.Optional(CONF_TCP_TIMEOUT_LAMBDA): cv.returning_lambda,
-
-        cv.Required(CONF_OPENED_SENSOR): cv.use_id(binary_sensor.BinarySensor),
-        cv.Required(CONF_CLOSED_SENSOR): cv.use_id(binary_sensor.BinarySensor),
-
-        cv.Required(CONF_IN1_PIN): pins.internal_gpio_output_pin_schema,
-        cv.Required(CONF_IN2_PIN): pins.internal_gpio_output_pin_schema,
-        cv.Optional(CONF_DUTY_CYCLE, default="100"): cv.int_range(min=0, max=100),
-    }
-    )
+# Validate ESPHome version
+REQUIRES_ESPHOME_VERSION = cv.require_esphome_version(2022, 3, 0)
+# Validate only the rolloffino-specific schema additions
+ROLLOFFINO_SCHEMA = cv.Schema({
+    cv.GenerateID(): cv.declare_id(RolloffinoComponent),
+    cv.Required(CONF_OPENED_SENSOR): cv.use_id(binary_sensor.BinarySensor),
+    cv.Required(CONF_CLOSED_SENSOR): cv.use_id(binary_sensor.BinarySensor),
+    cv.Required(CONF_IN1_PIN): pins.internal_gpio_output_pin_schema,
+    cv.Required(CONF_IN2_PIN): pins.internal_gpio_output_pin_schema,
+    cv.Optional(CONF_DUTY_CYCLE, default="100"): cv.int_range(min=0, max=100),
+})
+# Compose the final schema by extending the base tcp_server schema
+CONFIG_SCHEMA = cv.All(REQUIRES_ESPHOME_VERSION, tcp_server.CONFIG_SCHEMA.extend(ROLLOFFINO_SCHEMA.schema))
 
 
 async def to_code(config):
