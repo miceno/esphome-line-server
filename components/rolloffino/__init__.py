@@ -21,9 +21,8 @@ CONF_TCP_TIMEOUT_LAMBDA = "tcp_timeout_lambda"
 CONF_OPENED_SENSOR = "opened_sensor"
 CONF_CLOSED_SENSOR = "closed_sensor"
 
-AUTO_LOAD = ["socket"]
-
-DEPENDENCIES = ["network"]
+AUTO_LOAD = ["tcp_server"]
+DEPENDENCIES = ["tcp_server"]
 
 MULTI_CONF = True
 
