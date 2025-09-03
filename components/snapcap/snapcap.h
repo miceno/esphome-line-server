@@ -20,10 +20,20 @@ protected:
     uint8_t brightness_ = 128;
     bool light_on_ = false;
     uint16_t servo_position_ = 0;
-    uint8_t cover_status_ = 0;
+    uint8_t cover_status_ = COVER_CLOSED;
     uint8_t servo_status_ = 0;
     uint8_t light_status_ = 0;
     std::string firmware_version_ = "103";
+    // Cover status enum for protocol
+    enum CoverStatus {
+        COVER_MOVING = 0,
+        COVER_OPEN = 1,
+        COVER_CLOSED = 2,
+        COVER_TIMED_OUT = 3,
+        COVER_OPEN_CIRCUIT = 4,
+        COVER_OVERCURRENT = 5,
+        COVER_USER_ABORT = 6
+    };
 };
 
 } // namespace snapcap
