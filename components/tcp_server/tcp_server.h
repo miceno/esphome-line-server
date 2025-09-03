@@ -16,6 +16,15 @@ using namespace esphome;
 namespace esphome {
     namespace tcp_server {
 
+#define LOG_TCP_SERVER(prefix, type, obj) \
+  if ((obj) != nullptr) { \
+    ESP_LOGCONFIG(TAG, "Listening on: %s:%u", esphome::network::get_use_address().c_str(), this->port_); \
+    ESP_LOGCONFIG(TAG, "TCP buffer: size=%zu, terminator=%s", \
+      tcp_buf_size_, \
+      esphome::format_hex_pretty((const uint8_t*)tcp_terminator_.data(), tcp_terminator_.size()).c_str()); \
+    ESP_LOGCONFIG(TAG, "TCP flush timeout: %ums", tcp_flush_timeout_ms_); \
+  }
+
 class TCPServerComponent : public esphome::Component {
 public:
     void set_port(uint16_t port) { port_ = port; }
@@ -32,7 +41,6 @@ public:
 
     void setup() override;
     void loop() override;
-    void dump_config() override;
     void on_shutdown() override;
     float get_setup_priority() const override { return esphome::setup_priority::AFTER_WIFI; }
 

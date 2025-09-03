@@ -45,14 +45,6 @@ void TCPServerComponent::loop() {
   }
 }
 
-void TCPServerComponent::dump_config() {
-  ESP_LOGCONFIG(TAG, "Listening on: %s:%u", esphome::network::get_use_address().c_str(), this->port_);
-  ESP_LOGCONFIG(TAG, "TCP buffer: size=%zu, terminator=%s",
-      tcp_buf_size_,
-      esphome::format_hex_pretty((const uint8_t*)tcp_terminator_.data(), tcp_terminator_.size()).c_str());
-  ESP_LOGCONFIG(TAG, "TCP flush timeout: %ums", tcp_flush_timeout_ms_);
-}
-
 void TCPServerComponent::on_shutdown() {
   for (const Client &client : this->clients_)
     client.socket->shutdown(SHUT_RDWR);
