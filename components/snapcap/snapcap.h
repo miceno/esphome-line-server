@@ -1,4 +1,3 @@
-# ...existing code...
 #pragma once
 #include "esphome/components/tcp_server/tcp_server.h"
 
