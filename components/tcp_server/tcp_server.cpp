@@ -46,7 +46,6 @@ void TCPServerComponent::loop() {
 }
 
 void TCPServerComponent::dump_config() {
-  TCPServerComponent::dump_config();
   ESP_LOGCONFIG(TAG, "Listening on: %s:%u", esphome::network::get_use_address().c_str(), this->port_);
   ESP_LOGCONFIG(TAG, "TCP buffer: size=%zu, terminator=%s",
       tcp_buf_size_,
