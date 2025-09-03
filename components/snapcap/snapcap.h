@@ -23,7 +23,8 @@ protected:
     uint8_t cover_status_ = COVER_CLOSED;
     uint8_t servo_status_ = 0;
     uint8_t light_status_ = 0;
-    std::string firmware_version_ = "103";
+    static const char *firmware_version_ = "302";
+
     // Cover status enum for protocol
     enum CoverStatus {
         COVER_MOVING = 0,
@@ -38,4 +39,3 @@ protected:
 
 } // namespace snapcap
 } // namespace esphome
-

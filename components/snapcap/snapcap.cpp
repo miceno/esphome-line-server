@@ -10,7 +10,7 @@ void SnapCapComponent::dump_config() {
     ESP_LOGCONFIG(TAG, "SnapCap device ID: %d", device_id_);
     ESP_LOGCONFIG(TAG, "Brightness: %d", brightness_);
     ESP_LOGCONFIG(TAG, "Servo position: %d", servo_position_);
-    ESP_LOGCONFIG(TAG, "Firmware version: %s", firmware_version_.c_str());
+    ESP_LOGCONFIG(TAG, "Firmware version: %s", firmware_version_);
 }
 
 void SnapCapComponent::process_command(const std::string &command) {
@@ -69,7 +69,7 @@ void SnapCapComponent::process_command(const std::string &command) {
         response = "*D000\n";
     } else if (command_str[1] == 'V') {
         // Firmware version
-        snprintf(buf, sizeof(buf), "*V%s\n", firmware_version_.c_str());
+        snprintf(buf, sizeof(buf), "*V%s\n", firmware_version_);
         response = buf;
     } else if (command_str[1] == 'M') {
         // Get servo position
