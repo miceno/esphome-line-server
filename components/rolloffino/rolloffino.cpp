@@ -32,6 +32,7 @@ void RolloffinoComponent::loop() {
 }
 
 void RolloffinoComponent::dump_config() {
+  TCPServerComponent::dump_config();
   ESP_LOGCONFIG(TAG, "Opened sensor: %s", this->opened_binary_sensor_ != nullptr ? this->opened_binary_sensor_->get_object_id().c_str() : "None");
   LOG_BINARY_SENSOR("  ", "Opened sensor:", this->opened_binary_sensor_);
   ESP_LOGCONFIG(TAG, "Closed sensor: %s", this->closed_binary_sensor_ != nullptr ? this->closed_binary_sensor_->get_object_id().c_str() : "None");
