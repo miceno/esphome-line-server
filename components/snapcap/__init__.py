@@ -23,7 +23,7 @@ CONFIG_SCHEMA = cv.Schema({
 
 async def to_code(config):
     var = cg.new_Pvariable(config[CONF_ID])
-    await tcp_server.register_tcp_server(config)
+    await tcp_server.setup_tcp_server(config)
     cg.add(var.set_device_id(config[CONF_DEVICE_ID]))
     cg.add(var.set_brightness(config[CONF_BRIGHTNESS]))
     cg.add(var.set_servo_position(config[CONF_SERVO_POSITION]))
