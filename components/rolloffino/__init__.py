@@ -51,7 +51,7 @@ def validate_terminator(value):
 REQUIRES_ESPHOME_VERSION = cv.require_esphome_version(2022, 3, 0)
 # Validate only the rolloffino-specific schema additions
 ROLLOFFINO_SCHEMA = cv.Schema({
-    cv.Required(CONF_ID): cv.declare_id(RolloffinoComponent),
+    cv.GenerateID(CONF_ID): cv.declare_id(RolloffinoComponent),
 
     cv.Required(CONF_OPENED_SENSOR): cv.use_id(binary_sensor.BinarySensor),
     cv.Required(CONF_CLOSED_SENSOR): cv.use_id(binary_sensor.BinarySensor),
