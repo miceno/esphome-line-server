@@ -81,6 +81,9 @@ void SnapCapComponent::process_command(const std::string &command) {
         servo_position_ = pos;
         snprintf(buf, sizeof(buf), "*N%d\n", servo_position_);
         response = buf;
+    } else if (command_str[1] == 'S') {
+        // Alternate wifi/serial
+        response = "*S000\n";
     } else if (command_str[1] == 'W') {
         // Alternate wifi/serial
         response = "*W000\n";
