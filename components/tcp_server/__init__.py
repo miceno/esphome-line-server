@@ -10,6 +10,7 @@ from esphome.const import (
     CONF_PORT,
 )
 from esphome.core import CORE
+from esphome.core.entity_helpers import entity_duplicate_validator, setup_entity
 
 CONF_TCP_BUFFER_SIZE = "tcp_buffer_size"
 CONF_TCP_TERMINATOR = "tcp_terminator"
@@ -60,6 +61,9 @@ async def setup_tcp_server(var, config):
     # Only add the ID if it is not present in config
     if not CORE.has_id(config[CONF_ID]):
         var = cg.Pvariable(config[CONF_ID], var)
+
+    await setup_entity(var, config, "cover")
+
     cg.add(var.set_port(config[CONF_PORT]))
     cg.add(var.set_tcp_buffer_size(config[CONF_TCP_BUFFER_SIZE]))
     cg.add(var.set_tcp_terminator(config[CONF_TCP_TERMINATOR]))
