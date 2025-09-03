@@ -8,7 +8,7 @@
 #include <functional>
 #include "esphome/core/component.h"
 #include "esphome/components/socket/socket.h"
-#include "esphome/components/network/utils.h"
+#include "esphome/components/network/util.h"
 #include "esphome/components/tcp_server/ring_buffer.h"
 
 using esphome::tcp_server::RingBuffer;
