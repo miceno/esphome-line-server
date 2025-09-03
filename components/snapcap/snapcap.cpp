@@ -6,6 +6,8 @@ namespace snapcap {
 
 static const char *const TAG = "snapcap";
 
+const char *SnapCapComponent::firmware_version_ = "302";
+
 void SnapCapComponent::dump_config() {
     ESP_LOGCONFIG(TAG, "SnapCap device ID: %d", device_id_);
     ESP_LOGCONFIG(TAG, "Brightness: %d", brightness_);

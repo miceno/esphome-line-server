@@ -23,7 +23,7 @@ protected:
     uint8_t cover_status_ = COVER_CLOSED;
     uint8_t servo_status_ = 0;
     uint8_t light_status_ = 0;
-    static const char *firmware_version_ = "302";
+    static const char *firmware_version_;
 
     // Cover status enum for protocol
     enum CoverStatus {
