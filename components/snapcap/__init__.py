@@ -10,6 +10,10 @@ CONF_DEVICE_ID = "device_id"
 CONF_BRIGHTNESS = "brightness"
 CONF_SERVO_POSITION = "servo_position"
 
+AUTO_LOAD = ["tcp_server"]
+DEPENDENCIES = ["tcp_server"]
+MULTI_CONF = True
+
 CONFIG_SCHEMA = cv.Schema({
     cv.GenerateID(): cv.declare_id(SnapCapComponent),
     cv.Optional(CONF_DEVICE_ID, default=1): cv.int_range(min=0, max=99),
@@ -24,4 +28,3 @@ async def to_code(config):
     cg.add(var.set_brightness(config[CONF_BRIGHTNESS]))
     cg.add(var.set_servo_position(config[CONF_SERVO_POSITION]))
     await cg.register_component(var, config)
-
