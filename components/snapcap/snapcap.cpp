@@ -47,7 +47,7 @@ void SnapCapComponent::process_command(const std::string &command) {
         // Ping response and state in one buffer
         snprintf(buf, sizeof(buf), "*P%02d000\n*S%d%d%d\n", device_id_, servo_status_, light_status_, cover_status_);
         response = buf;
-    } else if (command_str[1] == 'B') && command.size() >= 5) {
+    } else if (command_str[1] == 'B' && command.size() >= 5) {
         // Set brightness
         int val = std::stoi(command.substr(2, 3));
         brightness_ = val;
@@ -75,7 +75,7 @@ void SnapCapComponent::process_command(const std::string &command) {
         // Get servo position
         snprintf(buf, sizeof(buf), "*M%d\n", servo_position_);
         response = buf;
-    } else if (command_str[1] == 'N') && command.size() >= 5) {
+    } else if (command_str[1] == 'N' && command.size() >= 5) {
         // Move servo position
         int pos = std::stoi(command.substr(2, 3));
         servo_position_ = pos;
