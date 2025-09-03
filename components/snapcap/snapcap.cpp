@@ -1,4 +1,3 @@
-# ...existing code...
 #include "snapcap.h"
 #include "esphome/core/log.h"
 
@@ -15,6 +14,8 @@ void SnapCapComponent::dump_config() {
 }
 
 void SnapCapComponent::process_command(const std::string &command) {
+    // Use a static buffer for all responses to minimize stack usage
+    static char buf[32];
     std::string response;
     if (command.rfind(">O000", 0) == 0) {
         // Open (small steps)
@@ -37,20 +38,19 @@ void SnapCapComponent::process_command(const std::string &command) {
         cover_status_ = 2;
         servo_status_ = 1;
     } else if (command.rfind(">P000", 0) == 0) {
-        // Ping
-        response = "*P" + (device_id_ < 10 ? "0" : "") + std::to_string(device_id_) + "000\n";
-    } else if (command.rfind(">S000", 0) == 0) {
-        // Request state
-        response = "*S000\n";
-        response += "*S" + std::to_string(servo_status_) + std::to_string(light_status_) + std::to_string(cover_status_) + "\n";
+        // Ping response and state in one buffer
+        snprintf(buf, sizeof(buf), "*P%02d000\n*S%d%d%d\n", device_id_, servo_status_, light_status_, cover_status_);
+        response = buf;
     } else if (command.rfind(">B", 0) == 0 && command.size() >= 5) {
         // Set brightness
         int val = std::stoi(command.substr(2, 3));
         brightness_ = val;
-        response = "*B" + std::to_string(brightness_) + "\n";
+        snprintf(buf, sizeof(buf), "*B%d\n", brightness_);
+        response = buf;
     } else if (command.rfind(">J000", 0) == 0) {
         // Get brightness
-        response = "*B" + std::to_string(brightness_) + "\n";
+        snprintf(buf, sizeof(buf), "*B%d\n", brightness_);
+        response = buf;
     } else if (command.rfind(">L000", 0) == 0) {
         // Light on
         light_on_ = true;
@@ -63,15 +63,18 @@ void SnapCapComponent::process_command(const std::string &command) {
         response = "*D000\n";
     } else if (command.rfind(">V000", 0) == 0) {
         // Firmware version
-        response = "*V" + firmware_version_ + "\n";
+        snprintf(buf, sizeof(buf), "*V%s\n", firmware_version_.c_str());
+        response = buf;
     } else if (command.rfind(">M000", 0) == 0) {
         // Get servo position
-        response = "*M" + std::to_string(servo_position_) + "\n";
+        snprintf(buf, sizeof(buf), "*M%d\n", servo_position_);
+        response = buf;
     } else if (command.rfind(">N", 0) == 0 && command.size() >= 5) {
         // Move servo position
         int pos = std::stoi(command.substr(2, 3));
         servo_position_ = pos;
-        response = "*N" + std::to_string(servo_position_) + "\n";
+        snprintf(buf, sizeof(buf), "*N%d\n", servo_position_);
+        response = buf;
     } else if (command.rfind(">W000", 0) == 0) {
         // Alternate wifi/serial
         response = "*W000\n";
@@ -83,4 +86,3 @@ void SnapCapComponent::process_command(const std::string &command) {
 
 } // namespace snapcap
 } // namespace esphome
-
