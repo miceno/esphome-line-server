@@ -53,8 +53,7 @@ TCP_SERVER_SCHEMA = cv.Schema(
         cv.Optional(CONF_TCP_TIMEOUT, default="300ms"): cv.positive_time_period_milliseconds,
         cv.Optional(CONF_TCP_TIMEOUT_LAMBDA): cv.returning_lambda,
     }
-).extend(cv.COMPONENT_SCHEMA
-).extend(cv.ENTITY_BASE_SCHEMA)
+).extend(cv.COMPONENT_SCHEMA)
 
 CONFIG_SCHEMA = cv.All(REQUIRES_ESPHOME_VERSION, TCP_SERVER_SCHEMA)
 
@@ -63,7 +62,7 @@ async def setup_tcp_server(var, config):
     if not CORE.has_id(config[CONF_ID]):
         var = cg.Pvariable(config[CONF_ID], var)
 
-    await setup_entity(var, config, "tcp_server")
+    await setup_entity(var, config, "cover")
 
     cg.add(var.set_port(config[CONF_PORT]))
     cg.add(var.set_tcp_buffer_size(config[CONF_TCP_BUFFER_SIZE]))
