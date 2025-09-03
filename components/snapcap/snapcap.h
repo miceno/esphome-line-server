@@ -8,7 +8,6 @@ class SnapCapComponent : public tcp_server::TCPServerComponent {
 public:
     void process_command(const std::string &command) override;
     void dump_config() override;
-    void loop() override;
 
     // Setters for configuration
     void set_device_id(uint8_t id) { device_id_ = id; }
