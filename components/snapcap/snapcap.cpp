@@ -9,11 +9,11 @@ static const char *const TAG = "snapcap";
 const char *SnapCapComponent::firmware_version_ = "302";
 
 void SnapCapComponent::dump_config() {
-    TCPServerComponent::dump_config();
-    ESP_LOGCONFIG(TAG, "SnapCap device ID: %d", device_id_);
-    ESP_LOGCONFIG(TAG, "Brightness: %d", brightness_);
-    ESP_LOGCONFIG(TAG, "Servo position: %d", servo_position_);
-    ESP_LOGCONFIG(TAG, "Firmware version: %s", firmware_version_);
+  LOG_TCP_SERVER(TAG, "SnapCap", this);
+  ESP_LOGCONFIG(TAG, "SnapCap device ID: %d", device_id_);
+  ESP_LOGCONFIG(TAG, "Brightness: %d", brightness_);
+  ESP_LOGCONFIG(TAG, "Servo position: %d", servo_position_);
+  ESP_LOGCONFIG(TAG, "Firmware version: %s", firmware_version_);
 }
 
 void SnapCapComponent::process_command(const std::string &command) {
@@ -22,10 +22,10 @@ void SnapCapComponent::process_command(const std::string &command) {
     std::string response;
     const char *command_str = command.c_str();
     if (command.empty() || command[0] != '>') {
-				response = "*ERR\n";
-				this->send_response(response);
-				return;
-		}
+        response = "*ERR\n";
+        this->send_response(response);
+        return;
+    }
     if (command_str[1] == 'O') {
         // Open (small steps)
         response = "*O000\n";
@@ -87,7 +87,7 @@ void SnapCapComponent::process_command(const std::string &command) {
     } else if (command_str[1] == 'S') {
         // Alternate wifi/serial
         snprintf(buf, sizeof(buf), "*S%d%d%d\n", servo_status_, light_status_, cover_status_);
-				response = buf;
+        response = buf;
     } else if (command_str[1] == 'W') {
         // Alternate wifi/serial
         response = "*W000\n";
