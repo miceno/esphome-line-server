@@ -14,10 +14,6 @@ void SnapCapComponent::dump_config() {
     ESP_LOGCONFIG(TAG, "Firmware version: %s", firmware_version_.c_str());
 }
 
-void SnapCapComponent::loop() {
-    // Add any periodic logic here (e.g., update state)
-}
-
 void SnapCapComponent::process_command(const std::string &command) {
     std::string response;
     if (command.rfind(">O000", 0) == 0) {
@@ -87,5 +83,4 @@ void SnapCapComponent::process_command(const std::string &command) {
 
 } // namespace snapcap
 } // namespace esphome
-# ...existing code...
 

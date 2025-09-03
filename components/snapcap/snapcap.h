@@ -30,5 +30,4 @@ protected:
 
 } // namespace snapcap
 } // namespace esphome
-# ...existing code...
 
