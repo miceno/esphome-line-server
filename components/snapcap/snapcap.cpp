@@ -17,7 +17,7 @@ void SnapCapComponent::process_command(const std::string &command) {
     // Use a static buffer for all responses to minimize stack usage
     static char buf[32];
     std::string response;
-    const char *command_cstr = command.c_str();
+    const char *command_str = command.c_str();
     if (command.empty() || command[0] != '>') {
 				response = "*ERR\n";
 				this->send_response(response);
