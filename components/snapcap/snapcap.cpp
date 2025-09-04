@@ -1,5 +1,6 @@
 #include "snapcap.h"
 #include "esphome/core/log.h"
+#include "esphome/components/servo/servo.h"
 
 namespace esphome {
 namespace snapcap {
@@ -8,12 +9,26 @@ static const char *const TAG = "snapcap";
 
 const char *SnapCapComponent::firmware_version_ = "302";
 
+#define LOG_SERVO(prefix, type, obj) \
+  if ((obj) != nullptr) { \
+    ESP_LOGCONFIG(TAG, \
+                "Servo:\n" \
+                "  Idle Level: %.1f%%\n" \
+                "  Min Level: %.1f%%\n" \
+                "  Max Level: %.1f%%\n" \
+                "  Auto-detach time: %" PRIu32 " ms\n" \
+                "  Run duration: %" PRIu32 " ms", \
+                obj->idle_level_ * 100.0f, obj->min_level_ * 100.0f, obj->max_level_ * 100.0f, \
+                obj->auto_detach_time_, obj->transition_length_); \
+  }
+
 void SnapCapComponent::dump_config() {
   LOG_TCP_SERVER(TAG, "SnapCap", this);
   ESP_LOGCONFIG(TAG, "SnapCap device ID: %d", device_id_);
   ESP_LOGCONFIG(TAG, "Brightness: %d", brightness_);
   ESP_LOGCONFIG(TAG, "Servo position: %d", servo_position_);
   ESP_LOGCONFIG(TAG, "Firmware version: %s", firmware_version_);
+  LOG_SERVO("  ", "Servo", servo_);
 }
 
 void SnapCapComponent::process_command(const std::string &command) {

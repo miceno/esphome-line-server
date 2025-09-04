@@ -1,5 +1,6 @@
 #pragma once
 #include "esphome/components/tcp_server/tcp_server.h"
+#include "esphome/components/servo/servo.h"
 
 namespace esphome {
 namespace snapcap {
@@ -13,6 +14,8 @@ public:
     void set_device_id(uint8_t id) { device_id_ = static_cast<DeviceType>(id); }
     void set_brightness(uint8_t brightness) { brightness_ = brightness; }
     void set_servo_position(uint16_t position) { servo_position_ = position; }
+
+		void set_servo(servo::Servo *servo) { servo_ = servo; }
 
 protected:
     // Device type enum for protocol
@@ -32,6 +35,9 @@ protected:
     uint8_t servo_status_ = 0;
     uint8_t light_status_ = 0;
     static const char *firmware_version_;
+
+    servo::Servo *servo_ = nullptr;
+
     // Cover status enum for protocol
     enum CoverStatus {
         COVER_MOVING = 0,
