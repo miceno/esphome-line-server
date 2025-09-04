@@ -28,7 +28,7 @@ Send     : >B128\n      //set brightness 128
 Receive  : *B128\n      //confirming brightness set to 128
 
 Send     : >J000\n      //get brightness
-Receive  : *B128\n      //brightness value of 128 (assuming as set from above)
+Receive  : *J128\n      //brightness value of 128 (assuming as set from above)
 
 Send     : >L000\n      //turn light on (uses set brightness value)
 Receive  : *L000\n      //confirms light turned on
