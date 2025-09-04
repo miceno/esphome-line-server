@@ -35,8 +35,8 @@ namespace esphome {
         private:
             size_t index_(size_t pos) const;
 
-            std::unique_ptr<uint8_t[]> buf_;
             size_t size_;
+            std::unique_ptr<uint8_t[]> buf_;
             size_t head_ = 0;
             size_t tail_ = 0;
             std::string terminator_;
