@@ -69,7 +69,7 @@ void SnapCapComponent::process_command(const std::string &command) {
         response = buf;
     } else if (command_str[1] == 'J') {
         // Get brightness
-        snprintf(buf, sizeof(buf), "*B%03d\n", brightness_);
+        snprintf(buf, sizeof(buf), "*J%03d\n", brightness_);
         response = buf;
     } else if (command_str[1] == 'L') {
         // Light on
