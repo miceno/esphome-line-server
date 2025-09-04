@@ -29,82 +29,82 @@ void SnapCapComponent::process_command(const std::string &command) {
     std::string response;
     const char *command_str = command.c_str();
     if (command.empty() || command[0] != '>') {
-        response = "*ERR\n";
+        response = "*ERR\r\n";
         this->send_response(response);
         return;
     }
     if (command_str[1] == 'O') {
         // Open (small steps)
-        response = "*O000\n";
+        response = "*O000\r\n";
         cover_status_ = COVER_OPEN;
         servo_status_ = MS_RUNNING;
         servo_->write(1.0);
     } else if (command_str[1] == 'o') {
         // Force open (one step)
-        response = "*o000\n";
+        response = "*o000\r\n";
         cover_status_ = COVER_OPEN;
         servo_status_ = MS_RUNNING;
         servo_->write(1.0);
     } else if (command_str[1] == 'C') {
         // Close (small steps)
-        response = "*C000\n";
+        response = "*C000\r\n";
         cover_status_ = COVER_CLOSED;
         servo_status_ = MS_RUNNING;
         servo_->write(-1.0);
     } else if (command_str[1] == 'c') {
         // Force close (one step)
-        response = "*c000\n";
+        response = "*c000\r\n";
         cover_status_ = COVER_CLOSED;
         servo_status_ = MS_RUNNING;
         servo_->write(-1.0);
     } else if (command_str[1] == 'P') {
         // Ping response and state in one buffer
-        snprintf(buf, sizeof(buf), "*P%02d00\n", device_id_);
+        snprintf(buf, sizeof(buf), "*P%02d00\r\n", device_id_);
         response = buf;
     } else if (command_str[1] == 'B' && command.size() >= 5) {
         // Set brightness
         int val = std::stoi(command.substr(2, 3));
         brightness_ = val;
-        snprintf(buf, sizeof(buf), "*B%03d\n", brightness_);
+        snprintf(buf, sizeof(buf), "*B%03d\r\n", brightness_);
         response = buf;
     } else if (command_str[1] == 'J') {
         // Get brightness
-        snprintf(buf, sizeof(buf), "*J%03d\n", brightness_);
+        snprintf(buf, sizeof(buf), "*J%03d\r\n", brightness_);
         response = buf;
     } else if (command_str[1] == 'L') {
         // Light on
         light_on_ = true;
         light_status_ = 1;
-        response = "*L000\n";
+        response = "*L000\r\n";
     } else if (command_str[1] == 'D') {
         // Light off
         light_on_ = false;
         light_status_ = 0;
-        response = "*D000\n";
+        response = "*D000\r\n";
     } else if (command_str[1] == 'V') {
         // Firmware version
-        snprintf(buf, sizeof(buf), "*V%s\n", firmware_version_);
+        snprintf(buf, sizeof(buf), "*V%s\r\n", firmware_version_);
         response = buf;
     } else if (command_str[1] == 'M') {
         // Get servo position
-        snprintf(buf, sizeof(buf), "*M%03d\n", servo_position_);
+        snprintf(buf, sizeof(buf), "*M%03d\r\n", servo_position_);
         response = buf;
     } else if (command_str[1] == 'N' && command.size() >= 5) {
         // Move servo position
         int pos = std::stoi(command.substr(2, 3));
         servo_position_ = pos;
-        snprintf(buf, sizeof(buf), "*N%03d\n", servo_position_);
+        snprintf(buf, sizeof(buf), "*N%03d\r\n", servo_position_);
         response = buf;
     } else if (command_str[1] == 'S') {
         // Alternate wifi/serial
         servo_status_ = servo_->has_reached_target() ? MS_STOPPED : MS_RUNNING;
-        snprintf(buf, sizeof(buf), "*S%d%d%d\n", servo_status_, light_status_, cover_status_);
+        snprintf(buf, sizeof(buf), "*S%d%d%d\r\n", servo_status_, light_status_, cover_status_);
         response = buf;
     } else if (command_str[1] == 'W') {
         // Alternate wifi/serial
-        response = "*W000\n";
+        response = "*W000\r\n";
     } else {
-        response = "*ERR\n";
+        response = "*ERR\r\n";
     }
     this->send_response(response);
 }
