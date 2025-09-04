@@ -15,6 +15,14 @@ public:
     void set_servo_position(uint16_t position) { servo_position_ = position; }
 
 protected:
+    // Device type enum for protocol
+    enum DeviceType {
+        FLAT_MAN_L = 10,
+        FLAT_MAN_XL = 15,
+        FLAT_MAN = 19,
+        FLIP_DUST = 98,
+        FLIP_FLAT = 99
+    };
     // Device state variables
     DeviceType device_id_ = FLIP_FLAT;
     uint8_t brightness_ = 128;
@@ -24,7 +32,6 @@ protected:
     uint8_t servo_status_ = 0;
     uint8_t light_status_ = 0;
     static const char *firmware_version_;
-
     // Cover status enum for protocol
     enum CoverStatus {
         COVER_MOVING = 0,
@@ -34,15 +41,6 @@ protected:
         COVER_OPEN_CIRCUIT = 4,
         COVER_OVERCURRENT = 5,
         COVER_USER_ABORT = 6
-    };
-
-    // Device type enum for protocol
-    enum DeviceType {
-        FLAT_MAN_L = 10,
-        FLAT_MAN_XL = 15,
-        FLAT_MAN = 19,
-        FLIP_DUST = 98,
-        FLIP_FLAT = 99
     };
 };
 
