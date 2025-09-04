@@ -26,18 +26,6 @@ protected:
         FLIP_DUST = 98,
         FLIP_FLAT = 99
     };
-    // Device state variables
-    DeviceType device_id_ = FLIP_FLAT;
-    uint8_t brightness_ = 128;
-    bool light_on_ = false;
-    uint16_t servo_position_ = 0;
-    CoverStatus cover_status_ = COVER_CLOSED;
-    ServoStatuses servo_status_ = MS_STOPPED;
-    uint8_t light_status_ = 0;
-    static const char *firmware_version_;
-
-    servo::Servo *servo_ = nullptr;
-
     // Cover status enum for protocol
     enum CoverStatus {
         COVER_MOVING = 0,
@@ -53,6 +41,18 @@ protected:
         MS_RUNNING = 1,
         MS_UNDEFINED
     };
+
+    // Device state variables
+    DeviceType device_id_ = FLIP_FLAT;
+    uint8_t brightness_ = 128;
+    bool light_on_ = false;
+    uint16_t servo_position_ = 0;
+    CoverStatus cover_status_ = COVER_CLOSED;
+    ServoStatuses servo_status_ = MS_STOPPED;
+    uint8_t light_status_ = 0;
+    static const char *firmware_version_;
+
+    servo::Servo *servo_ = nullptr;
 
 };
 
