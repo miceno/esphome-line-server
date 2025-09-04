@@ -37,22 +37,22 @@ void SnapCapComponent::process_command(const std::string &command) {
         // Open (small steps)
         response = "*O000\n";
         cover_status_ = COVER_OPEN;
-        servo_status_ = 1;
+        servo_status_ = MS_RUNNING;
     } else if (command_str[1] == 'o') {
         // Force open (one step)
         response = "*o000\n";
         cover_status_ = COVER_OPEN;
-        servo_status_ = 1;
+        servo_status_ = MS_RUNNING;
     } else if (command_str[1] == 'C') {
         // Close (small steps)
         response = "*C000\n";
         cover_status_ = COVER_CLOSED;
-        servo_status_ = 1;
+        servo_status_ = MS_RUNNING;
     } else if (command_str[1] == 'c') {
         // Force close (one step)
         response = "*c000\n";
         cover_status_ = COVER_CLOSED;
-        servo_status_ = 1;
+        servo_status_ = MS_RUNNING;
     } else if (command_str[1] == 'P') {
         // Ping response and state in one buffer
         snprintf(buf, sizeof(buf), "*P%02d00\n", device_id_);
@@ -93,6 +93,7 @@ void SnapCapComponent::process_command(const std::string &command) {
         response = buf;
     } else if (command_str[1] == 'S') {
         // Alternate wifi/serial
+        servo_status_ = servo_->has_reached_target() ? MS_STOPPED : MS_RUNNING;
         snprintf(buf, sizeof(buf), "*S%d%d%d\n", servo_status_, light_status_, cover_status_);
         response = buf;
     } else if (command_str[1] == 'W') {

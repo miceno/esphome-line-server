@@ -31,8 +31,8 @@ protected:
     uint8_t brightness_ = 128;
     bool light_on_ = false;
     uint16_t servo_position_ = 0;
-    uint8_t cover_status_ = COVER_CLOSED;
-    uint8_t servo_status_ = 0;
+    CoverStatus cover_status_ = COVER_CLOSED;
+    ServoStatuses servo_status_ = MS_STOPPED;
     uint8_t light_status_ = 0;
     static const char *firmware_version_;
 
@@ -48,6 +48,12 @@ protected:
         COVER_OVERCURRENT = 5,
         COVER_USER_ABORT = 6
     };
+    enum ServoStatuses {
+        MS_STOPPED = 0,
+        MS_RUNNING = 1,
+        MS_UNDEFINED
+    };
+
 };
 
 } // namespace snapcap
