@@ -10,7 +10,7 @@ public:
     void dump_config() override;
 
     // Setters for configuration
-    void set_device_id(uint8_t id) { device_id_ = id; }
+    void set_device_id(uint8_t id) { device_id_ = static_cast<DeviceType>(id); }
     void set_brightness(uint8_t brightness) { brightness_ = brightness; }
     void set_servo_position(uint16_t position) { servo_position_ = position; }
 
