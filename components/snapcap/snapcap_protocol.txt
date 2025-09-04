@@ -11,6 +11,9 @@ Receive  : *C000\n      //confirming command received
 Send     : >c000\n      //force close, moving the servo to closed position in one step
 Receive  : *c000\n      //confirming command received
 
+Send     : >A000\n      //User abort, stops the servo movement
+Receive  : *A000\n      //confirming command received
+
 Send     : >P000\n      //ping
 Receive  : *P<deviceid>000\n      //confirming alive, 2 digit device id
 

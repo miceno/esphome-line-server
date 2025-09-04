@@ -61,6 +61,12 @@ void SnapCapComponent::process_command(const std::string &command) {
         // Ping response and state in one buffer
         snprintf(buf, sizeof(buf), "*P%02d00\r\n", device_id_);
         response = buf;
+    } else if (command_str[1] == 'A') {
+        // Abort command
+        response = "*A000\r\n";
+        servo_->detach();
+        cover_status_ = COVER_USER_ABORT;
+        servo_status_ = MS_STOPPED;
     } else if (command_str[1] == 'B' && command.size() >= 5) {
         // Set brightness
         int val = std::stoi(command.substr(2, 3));
