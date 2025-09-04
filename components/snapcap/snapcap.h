@@ -16,7 +16,7 @@ public:
 
 protected:
     // Device state variables
-    uint8_t device_id_ = 1;
+    DeviceType device_id_ = FLIP_FLAT;
     uint8_t brightness_ = 128;
     bool light_on_ = false;
     uint16_t servo_position_ = 0;
@@ -34,6 +34,15 @@ protected:
         COVER_OPEN_CIRCUIT = 4,
         COVER_OVERCURRENT = 5,
         COVER_USER_ABORT = 6
+    };
+
+    // Device type enum for protocol
+    enum DeviceType {
+        FLAT_MAN_L = 10,
+        FLAT_MAN_XL = 15,
+        FLAT_MAN = 19,
+        FLIP_DUST = 98,
+        FLIP_FLAT = 99
     };
 };
 
