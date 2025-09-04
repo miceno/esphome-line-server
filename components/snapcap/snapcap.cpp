@@ -48,7 +48,7 @@ void SnapCapComponent::process_command(const std::string &command) {
         servo_status_ = 1;
     } else if (command_str[1] == 'P') {
         // Ping response and state in one buffer
-        snprintf(buf, sizeof(buf), "*P%02d000\n*S%d%d%d\n", device_id_, servo_status_, light_status_, cover_status_);
+        snprintf(buf, sizeof(buf), "*P%02d00\n", device_id_);
         response = buf;
     } else if (command_str[1] == 'B' && command.size() >= 5) {
         // Set brightness
