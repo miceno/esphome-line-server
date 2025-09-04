@@ -54,11 +54,11 @@ void SnapCapComponent::process_command(const std::string &command) {
         // Set brightness
         int val = std::stoi(command.substr(2, 3));
         brightness_ = val;
-        snprintf(buf, sizeof(buf), "*B%d\n", brightness_);
+        snprintf(buf, sizeof(buf), "*B%03d\n", brightness_);
         response = buf;
     } else if (command_str[1] == 'J') {
         // Get brightness
-        snprintf(buf, sizeof(buf), "*B%d\n", brightness_);
+        snprintf(buf, sizeof(buf), "*B%03d\n", brightness_);
         response = buf;
     } else if (command_str[1] == 'L') {
         // Light on
@@ -76,13 +76,13 @@ void SnapCapComponent::process_command(const std::string &command) {
         response = buf;
     } else if (command_str[1] == 'M') {
         // Get servo position
-        snprintf(buf, sizeof(buf), "*M%d\n", servo_position_);
+        snprintf(buf, sizeof(buf), "*M%03d\n", servo_position_);
         response = buf;
     } else if (command_str[1] == 'N' && command.size() >= 5) {
         // Move servo position
         int pos = std::stoi(command.substr(2, 3));
         servo_position_ = pos;
-        snprintf(buf, sizeof(buf), "*N%d\n", servo_position_);
+        snprintf(buf, sizeof(buf), "*N%03d\n", servo_position_);
         response = buf;
     } else if (command_str[1] == 'S') {
         // Alternate wifi/serial
