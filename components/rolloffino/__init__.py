@@ -34,19 +34,6 @@ RolloffinoComponent = rolloffino_ns.class_("RolloffinoComponent",
                                               cg.Component)
 
 
-def validate_buffer_size(buffer_size):
-    if buffer_size & (buffer_size - 1) != 0:
-        raise cv.Invalid("Buffer size must be a power of two.")
-    return buffer_size
-
-
-def validate_terminator(value):
-    value = cv.string(value)
-    if len(value.encode("utf-8")) > 4:
-        raise cv.Invalid("Terminator must be <= 4 bytes")
-    return value
-
-
 # Validate ESPHome version
 REQUIRES_ESPHOME_VERSION = cv.require_esphome_version(2022, 3, 0)
 # Validate only the rolloffino-specific schema additions
