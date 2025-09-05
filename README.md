@@ -68,6 +68,7 @@ rolloffino:
   duty_cycle: 0.8
   opened_sensor: opened_binary_sensor
   closed_sensor: closed_binary_sensor
+  max_duration: 30s
 ```
 
 ### Configuration Options
@@ -80,6 +81,7 @@ rolloffino:
 | `en1_pin`       | gpio    | `"D8"`  | Pin connected to the EN1 pin on the motor controller              |
 | `en2_pin`       | gpio    | `"D7"`  | Pin connected to the EN2 pin on the motor controller              |
 | `duty_cycle`    | integer | `100%`  | Duty cycle as a percentage                                        |
+| `max_duration`  | duration| `30s`   | Maximum allowed duration for a single motor movement (in seconds) |
 
 
 ### Notes

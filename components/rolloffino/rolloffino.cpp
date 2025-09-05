@@ -143,7 +143,7 @@ void RolloffinoComponent::handle_motor_() {
     return;
 
   uint32_t now = esphome::micros();
-  if (now - this->motor_move_start_time_ > this->move_timeout) {
+  if (this->max_duration_ > 0 && (now - this->motor_move_start_time_ > this->max_duration_ * 1000000UL)) {
     this->motor_abort_();
     ESP_LOGW(TAG, "Motor movement aborted due to timeout");
     return;

@@ -7,6 +7,7 @@ from esphome.components import binary_sensor
 from esphome.const import (
     CONF_BUFFER_SIZE,
     CONF_ID,
+    CONF_MAX_DURATION,
     CONF_PORT,
 )
 import esphome.components.tcp_server as tcp_server
@@ -45,6 +46,7 @@ ROLLOFFINO_SCHEMA = cv.Schema({
     cv.Required(CONF_IN1_PIN): pins.internal_gpio_output_pin_schema,
     cv.Required(CONF_IN2_PIN): pins.internal_gpio_output_pin_schema,
     cv.Optional(CONF_DUTY_CYCLE, default="100"): cv.int_range(min=0, max=100),
+    cv.Optional(CONF_MAX_DURATION, default="30s"): cv.positive_time_period_seconds,
 }).extend(tcp_server.TCP_SERVER_SCHEMA)
 
 # Compose the final schema by extending the base tcp_server schema
@@ -67,3 +69,5 @@ async def to_code(config):
     cg.add(var.set_in1_pin(in1_pin))
     in2_pin = await cg.gpio_pin_expression(config[CONF_IN2_PIN])
     cg.add(var.set_in2_pin(in2_pin))
+    if CONF_MAX_DURATION in config:
+        cg.add(var.set_max_duration(config[CONF_MAX_DURATION]))

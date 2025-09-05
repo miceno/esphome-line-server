@@ -27,6 +27,9 @@ public:
     void set_closed_binary_sensor(binary_sensor::BinarySensor *sensor) { this->closed_binary_sensor_ = sensor; }
     void set_in1_pin(InternalGPIOPin *pin) { this->in1_pin_ = pin; }
     void set_in2_pin(InternalGPIOPin *pin) { this->in2_pin_ = pin; }
+    void set_max_duration(uint32_t seconds) {
+        max_duration_ = seconds;
+    }
 
     void process_command(const std::string &command) override;
 
@@ -54,8 +57,8 @@ protected:
     MotorDirection motor_direction_ = MOTOR_NONE;
     bool motor_active_ = false;
     bool pwm_active_ = false;
-    // Movement timeout in microseconds
-    uint32_t move_timeout = 20000000;
+    // Movement timeout in seconds
+    uint32_t max_duration_ = 0;
     uint32_t motor_move_start_time_ = 0;
 };
 
