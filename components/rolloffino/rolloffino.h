@@ -56,7 +56,6 @@ protected:
     };
     MotorDirection motor_direction_ = MOTOR_NONE;
     bool motor_active_ = false;
-    bool pwm_active_ = false;
     // Movement timeout in seconds
     uint32_t max_duration_ = 0;
     uint32_t motor_move_start_time_ = 0;
