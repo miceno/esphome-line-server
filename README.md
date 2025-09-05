@@ -63,9 +63,9 @@ binary_sensor:
     
 rolloffino:
   port: 8888
-  en1_pin: D1
-  en2_pin: D2
-  duty_cycle: 0.8
+  in1: D1
+  in2: D2
+  duty_cycle: 80
   opened_sensor: opened_binary_sensor
   closed_sensor: closed_binary_sensor
   max_duration: 30s
@@ -75,12 +75,12 @@ rolloffino:
 
 | Key             | Type    | Default | Description                                                       |
 |-----------------|---------|---------|-------------------------------------------------------------------|
-| `port`          | integer | `8888`  | TCP server port                                                   |
-| `opened_sensor` | id      | `""`    | Binary sensor for the limit sensor that marks the OPENED position |
-| `closed_sensor` | id      | `""`    | Binary sensor for the limit sensor that marks the CLOSED position |
-| `en1_pin`       | gpio    | `"D8"`  | Pin connected to the EN1 pin on the motor controller              |
-| `en2_pin`       | gpio    | `"D7"`  | Pin connected to the EN2 pin on the motor controller              |
-| `duty_cycle`    | integer | `100%`  | Duty cycle as a percentage                                        |
+| `port`          | integer |         | TCP server port (see tcp_server docs for default)                 |
+| `opened_sensor` | id      |         | Binary sensor for the limit sensor that marks the OPENED position |
+| `closed_sensor` | id      |         | Binary sensor for the limit sensor that marks the CLOSED position |
+| `in1`           | gpio    |         | Pin connected to the IN1 pin on the motor controller              |
+| `in2`           | gpio    |         | Pin connected to the IN2 pin on the motor controller              |
+| `duty_cycle`    | integer | `100`   | Duty cycle as a percentage (0-100)                                |
 | `max_duration`  | duration| `30s`   | Maximum allowed duration for a single motor movement (in seconds) |
 
 
