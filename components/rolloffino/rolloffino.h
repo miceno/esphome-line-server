@@ -55,7 +55,7 @@ protected:
     bool motor_active_ = false;
     bool pwm_active_ = false;
     // Movement timeout in microseconds
-    uint32_t move_timeout = 10000000;
+    uint32_t move_timeout = 20000000;
     uint32_t motor_move_start_time_ = 0;
 };
 
