@@ -33,10 +33,16 @@ void RolloffinoComponent::loop() {
 
 void RolloffinoComponent::dump_config() {
   LOG_TCP_SERVER(TAG, "Rolloffino", this);
-  ESP_LOGCONFIG(TAG, "Opened sensor: %s", this->opened_binary_sensor_ != nullptr ? this->opened_binary_sensor_->get_object_id().c_str() : "None");
-  LOG_BINARY_SENSOR("  ", "Opened sensor:", this->opened_binary_sensor_);
-  ESP_LOGCONFIG(TAG, "Closed sensor: %s", this->closed_binary_sensor_ != nullptr ? this->closed_binary_sensor_->get_object_id().c_str() : "None");
-  LOG_BINARY_SENSOR("  ", "Closed sensor:", this->closed_binary_sensor_);
+  ESP_LOGCONFIG(
+    TAG,
+    "Duty cycle: %u%%\nMax duration: %us\nOpened sensor: %s\nClosed sensor: %s",
+    this->duty_cycle_,
+    this->max_duration_,
+    this->opened_binary_sensor_ ? this->opened_binary_sensor_->get_object_id().c_str() : "None",
+    this->closed_binary_sensor_ ? this->closed_binary_sensor_->get_object_id().c_str() : "None"
+  );
+  LOG_PIN("  IN1 pin: ", this->in1_pin_);
+  LOG_PIN("  IN2 pin: ", this->in2_pin_);
 }
 
 
