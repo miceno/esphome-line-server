@@ -35,7 +35,10 @@ void RolloffinoComponent::dump_config() {
   LOG_TCP_SERVER(TAG, "Rolloffino", this);
   ESP_LOGCONFIG(
     TAG,
-    "Duty cycle: %u%%\nMax duration: %us\nOpened sensor: %s\nClosed sensor: %s",
+    "  Duty cycle: %u%%\n" \
+    "  Max duration: %us\n" \
+    "  Opened sensor: %s\n" \
+    "  Closed sensor: %s",
     this->duty_cycle_,
     this->max_duration_,
     this->opened_binary_sensor_ ? this->opened_binary_sensor_->get_object_id().c_str() : "None",
