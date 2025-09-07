@@ -110,12 +110,13 @@ void RolloffinoComponent::motor_open_() {
     ESP_LOGI(TAG, "Opening motor");
     // Start non-blocking open sequence using PWM
     if (this->in1_pin_ != nullptr && this->in2_pin_ != nullptr) {
-        analogWrite(this->in1_pin_->get_pin(), map(this->duty_cycle_, 0, 100, 0, 255));  // NOLINT
-        this->in2_pin_->digital_write(false);
-
         this->motor_direction_ = MOTOR_OPEN;
         this->motor_active_ = true;
         this->motor_move_start_time_ = esphome::micros();
+
+        // analogWrite(this->in1_pin_->get_pin(), map(this->duty_cycle_, 0, 100, 0, 255));  // NOLINT
+        this->in1_pin_->digital_write(true);
+        this->in2_pin_->digital_write(false);
     }
 }
 
@@ -123,12 +124,13 @@ void RolloffinoComponent::motor_close_() {
     ESP_LOGI(TAG, "Closing motor");
     // Start non-blocking close sequence using PWM
     if (this->in1_pin_ != nullptr && this->in2_pin_ != nullptr) {
-        this->in1_pin_->digital_write(false);
-        analogWrite(this->in2_pin_->get_pin(), map(this->duty_cycle_, 0, 100, 0, 255));  // NOLINT
-
         this->motor_direction_ = MOTOR_CLOSE;
         this->motor_active_ = true;
         this->motor_move_start_time_ = esphome::micros();
+
+        this->in1_pin_->digital_write(false);
+        // analogWrite(this->in2_pin_->get_pin(), map(this->duty_cycle_, 0, 100, 0, 255));  // NOLINT
+        this->in2_pin_->digital_write(true);
     }
 }
 
@@ -137,8 +139,8 @@ void RolloffinoComponent::motor_abort_() {
 
   this->motor_active_ = false;
   this->motor_direction_ = MOTOR_NONE;
-  this->in2_pin_->digital_write(true);
   this->in1_pin_->digital_write(true);
+  this->in2_pin_->digital_write(true);
 }
 
 void RolloffinoComponent::handle_motor_() {
