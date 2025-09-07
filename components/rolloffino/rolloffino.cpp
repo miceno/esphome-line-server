@@ -102,7 +102,7 @@ void RolloffinoComponent::process_command(const std::string &command){
 }
 
 void RolloffinoComponent::motor_open_() {
-    ESP_LOGD(TAG, "Opening motor");
+    ESP_LOGI(TAG, "Opening motor");
     // Start non-blocking open sequence using PWM
     if (this->in1_pin_ != nullptr && this->in2_pin_ != nullptr) {
 				analogWrite(this->in1_pin_->get_pin(), map(this->duty_cycle_, 0, 100, 0, 255));  // NOLINT
@@ -115,7 +115,7 @@ void RolloffinoComponent::motor_open_() {
 }
 
 void RolloffinoComponent::motor_close_() {
-    ESP_LOGD(TAG, "Closing motor");
+    ESP_LOGI(TAG, "Closing motor");
     // Start non-blocking close sequence using PWM
     if (this->in1_pin_ != nullptr && this->in2_pin_ != nullptr) {
         this->in1_pin_->digital_write(false);
