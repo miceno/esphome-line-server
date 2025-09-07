@@ -32,6 +32,9 @@ void TCPServerComponent::setup() {
 
   this->socket_ = socket::socket_ip(SOCK_STREAM, PF_INET);
   this->socket_->setblocking(false);
+  int enable = 1;
+  this->socket_->setsockopt(IPPROTO_TCP, TCP_NODELAY, &enable, sizeof(int));
+
   this->socket_->bind(reinterpret_cast<struct sockaddr *>(&bind_addr), bind_addrlen);
   this->socket_->listen(8);
 }
