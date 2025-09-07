@@ -14,7 +14,7 @@ using esphome::tcp_server::RingBuffer;
 using namespace esphome;
 
 namespace esphome {
-	namespace rolloffino {
+    namespace rolloffino {
 static const char *const TAG = "rolloffino";
 static const char *const VERSION = "V1.7-esp-wifimanager-magnet-DRV8871";
 
@@ -50,62 +50,67 @@ void RolloffinoComponent::dump_config() {
 
 
 void RolloffinoComponent::process_command(const std::string &command){
-	ESP_LOGD(TAG, "Command is %s", command.c_str());
+    ESP_LOGD(TAG, "Command is %s", command.c_str());
 
-	std::string response;
-	// Process command here
-	if( command == "(CON:0:0)" ){
-		ESP_LOGV(TAG, "Connection request");
-		response = "(ACK:0:0)";
-	}
-	else if (command == "(GET:OPENED:0)"){
-		ESP_LOGV(TAG, "Opened status");
-		response = "(ACK:OPENED:";
-		if (this->opened_binary_sensor_ != nullptr && this->opened_binary_sensor_->state) {
-			response += "ON)";
-		} else {
-			response += "OFF)";
-		}
-	}
-	else if (command == "(GET:CLOSED:0)"){
-		ESP_LOGV(TAG, "Closed status");
-		response = "(ACK:CLOSED:";
-		if (this->closed_binary_sensor_ != nullptr && this->closed_binary_sensor_->state) {
-			response += "ON)";
-		} else {
-			response += "OFF)";
-		}
-	}
-	else if (command == "(SET:OPEN:ON)"){
-		ESP_LOGV(TAG, "Open cover");
-		response = "(ACK:OPEN:ON)";
-		this->motor_open_();
-	}
-	else if (command == "(SET:CLOSE:ON)"){
-		ESP_LOGV(TAG, "Close cover");
-		response = "(ACK:CLOSE:ON)";
-		this->motor_close_();
-	}
-	else if (command == "(GET:LOCKED:0)"){
-		ESP_LOGV(TAG, "Locked status");
-		response = "(ACK:LOCKED:OFF)";
-	}
-	else if (command == "(GET:AUXSTATE:0)"){
-		ESP_LOGV(TAG, "Aux state");
-		response = "(ACK:AUXSTATE:OFF)";
-	} else {
-		ESP_LOGE(TAG, "Unknown command: %s", command.c_str());
-		response = "(NAK:ERROR:" + command + ")";
-	}
+    std::string response;
+    // Process command here
+    if( command == "(CON:0:0)" ){
+        ESP_LOGV(TAG, "Connection request");
+        response = "(ACK:0:0)";
+    }
+    else if (command == "(GET:OPENED:0)"){
+        ESP_LOGV(TAG, "Opened status");
+        response = "(ACK:OPENED:";
+        if (this->opened_binary_sensor_ != nullptr && this->opened_binary_sensor_->state) {
+            response += "ON)";
+        } else {
+            response += "OFF)";
+        }
+    }
+    else if (command == "(GET:CLOSED:0)"){
+        ESP_LOGV(TAG, "Closed status");
+        response = "(ACK:CLOSED:";
+        if (this->closed_binary_sensor_ != nullptr && this->closed_binary_sensor_->state) {
+            response += "ON)";
+        } else {
+            response += "OFF)";
+        }
+    }
+    else if (command == "(SET:OPEN:ON)"){
+        ESP_LOGV(TAG, "Open cover");
+        response = "(ACK:OPEN:ON)";
+        this->motor_open_();
+    }
+    else if (command == "(SET:CLOSE:ON)"){
+        ESP_LOGV(TAG, "Close cover");
+        response = "(ACK:CLOSE:ON)";
+        this->motor_close_();
+    }
+    else if (command == "(SET:ABORT:ON)"){
+        ESP_LOGV(TAG, "Abort");
+        response = "(ACK:ABORT:ON)";
+        this->motor_abort_();
+    }
+    else if (command == "(GET:LOCKED:0)"){
+        ESP_LOGV(TAG, "Locked status");
+        response = "(ACK:LOCKED:OFF)";
+    }
+    else if (command == "(GET:AUXSTATE:0)"){
+        ESP_LOGV(TAG, "Aux state");
+        response = "(ACK:AUXSTATE:OFF)";
+    } else {
+        ESP_LOGE(TAG, "Unknown command: %s", command.c_str());
+        response = "(NAK:ERROR:" + command + ")";
+    }
 
-	this->send_response(response);
+    this->send_response(response);
 }
 
 void RolloffinoComponent::motor_open_() {
     ESP_LOGI(TAG, "Opening motor");
     // Start non-blocking open sequence using PWM
     if (this->in1_pin_ != nullptr && this->in2_pin_ != nullptr) {
-				analogWrite(this->in1_pin_->get_pin(), map(this->duty_cycle_, 0, 100, 0, 255));  // NOLINT
+                analogWrite(this->in1_pin_->get_pin(), map(this->duty_cycle_, 0, 100, 0, 255));  // NOLINT
         this->in2_pin_->digital_write(false);
 
         this->motor_direction_ = MOTOR_OPEN;
@@ -119,7 +124,7 @@ void RolloffinoComponent::motor_close_() {
     // Start non-blocking close sequence using PWM
     if (this->in1_pin_ != nullptr && this->in2_pin_ != nullptr) {
         this->in1_pin_->digital_write(false);
-				analogWrite(this->in2_pin_->get_pin(), map(this->duty_cycle_, 0, 100, 0, 255));  // NOLINT
+                analogWrite(this->in2_pin_->get_pin(), map(this->duty_cycle_, 0, 100, 0, 255));  // NOLINT
 
         this->motor_direction_ = MOTOR_CLOSE;
         this->motor_active_ = true;
@@ -128,12 +133,12 @@ void RolloffinoComponent::motor_close_() {
 }
 
 void RolloffinoComponent::motor_abort_() {
-	ESP_LOGD(TAG, "Stopping motor");
+  ESP_LOGI(TAG, "Stopping motor");
 
   this->motor_active_ = false;
   this->motor_direction_ = MOTOR_NONE;
-	this->in2_pin_->digital_write(true);
-	this->in1_pin_->digital_write(true);
+  this->in2_pin_->digital_write(true);
+  this->in1_pin_->digital_write(true);
 }
 
 void RolloffinoComponent::handle_motor_() {
@@ -148,5 +153,5 @@ void RolloffinoComponent::handle_motor_() {
   }
 }
 
-	}  // namespace rolloffino
+    }  // namespace rolloffino
 }  // namespace esphome
