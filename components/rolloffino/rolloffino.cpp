@@ -153,7 +153,8 @@ void RolloffinoComponent::handle_motor_() {
 }
 
 void RolloffinoComponent::setup() {
-// Call parent setup for proper initialization
+  ESP_LOGD(TAG, "Rolloffino version %s", VERSION);
+  // Call parent setup for proper initialization
   TCPServerComponent::setup();
   // Add Rolloffino-specific setup logic here if needed
   in1_pin_->setup();
