@@ -18,10 +18,11 @@ using esphome::tcp_server::RingBuffer;
 using namespace esphome;
 
 namespace esphome {
-		namespace rolloffino {
+namespace rolloffino {
 
 class RolloffinoComponent : public tcp_server::TCPServerComponent {
 public:
+    void setup() override;
     void set_duty_cycle(uint16_t duty_cycle) { duty_cycle_ = duty_cycle; }
     void set_opened_binary_sensor(binary_sensor::BinarySensor *sensor) { this->opened_binary_sensor_ = sensor; }
     void set_closed_binary_sensor(binary_sensor::BinarySensor *sensor) { this->closed_binary_sensor_ = sensor; }
@@ -35,7 +36,7 @@ public:
 
     void dump_config() override;
 
-		void loop() override;
+    void loop() override;
 
 protected:
     void handle_motor_();
@@ -61,5 +62,5 @@ protected:
     uint32_t motor_move_start_time_ = 0;
 };
 
-		}  // namespace rolloffino
+}  // namespace rolloffino
 }  // namespace esphome

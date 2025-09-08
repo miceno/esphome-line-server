@@ -11,6 +11,7 @@
 #include "../tcp_server/ring_buffer.h"
 
 using esphome::tcp_server::RingBuffer;
+using esphome::tcp_server::TCPServerComponent
 using namespace esphome;
 
 namespace esphome {
@@ -149,6 +150,15 @@ void RolloffinoComponent::handle_motor_() {
     ESP_LOGW(TAG, "Motor movement aborted due to timeout");
     return;
   }
+}
+
+void RolloffinoComponent::setup() {
+// Call parent setup for proper initialization
+  TCPServerComponent::setup();
+  // Add Rolloffino-specific setup logic here if needed
+  in1_pin_->setup();
+  in2_pin_->setup();
+  motor_abort_();
 }
 
     }  // namespace rolloffino
