@@ -2,6 +2,8 @@
 #include "esphome/core/log.h"
 #include "esphome/components/servo/servo.h"
 
+using esphome::tcp_server::TCPServerComponent;
+
 namespace esphome {
 namespace snapcap {
 
