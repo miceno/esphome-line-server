@@ -26,7 +26,7 @@ void SnapCapComponent::dump_config() {
 }
 
 void SnapCapComponent::setup(){
-  ESP_LOGD(TAG, "SnapCap version %s", firmware_version_);}
+  ESP_LOGD(TAG, "SnapCap version %s", firmware_version_);
   // Call parent setup for proper initialization
   TCPServerComponent::setup();
   // Add SnapCap-specific setup logic here if needed
