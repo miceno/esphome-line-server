@@ -38,25 +38,25 @@ void SnapCapComponent::process_command(const std::string &command) {
         response = "*O000\r\n";
         cover_status_ = COVER_OPEN;
         servo_status_ = MS_RUNNING;
-        servo_->write(1.0);
+        servo_->write(SERVO_POSITION_OPEN);
     } else if (command_str[1] == 'o') {
         // Force open (one step)
         response = "*o000\r\n";
         cover_status_ = COVER_OPEN;
         servo_status_ = MS_RUNNING;
-        servo_->write(1.0);
+        servo_->write(SERVO_POSITION_OPEN);
     } else if (command_str[1] == 'C') {
         // Close (small steps)
         response = "*C000\r\n";
         cover_status_ = COVER_CLOSED;
         servo_status_ = MS_RUNNING;
-        servo_->write(-1.0);
+        servo_->write(SERVO_POSITION_CLOSED);
     } else if (command_str[1] == 'c') {
         // Force close (one step)
         response = "*c000\r\n";
         cover_status_ = COVER_CLOSED;
         servo_status_ = MS_RUNNING;
-        servo_->write(-1.0);
+        servo_->write(SERVO_POSITION_CLOSED);
     } else if (command_str[1] == 'P') {
         // Ping response and state in one buffer
         snprintf(buf, sizeof(buf), "*P%02d00\r\n", device_id_);

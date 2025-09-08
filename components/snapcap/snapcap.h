@@ -15,7 +15,7 @@ public:
     void set_brightness(uint8_t brightness) { brightness_ = brightness; }
     void set_servo_position(uint16_t position) { servo_position_ = position; }
 
-		void set_servo(servo::Servo *servo) { servo_ = servo; }
+    void set_servo(servo::Servo *servo) { servo_ = servo; }
 
 protected:
     // Device type enum for protocol
@@ -54,6 +54,8 @@ protected:
 
     servo::Servo *servo_ = nullptr;
 
+    static constexpr float SERVO_POSITION_OPEN = 1.0f;
+    static constexpr float SERVO_POSITION_CLOSED = -1.0f;
 };
 
 } // namespace snapcap
