@@ -18,7 +18,7 @@ void TCPServerComponent::setup() {
 
   if (!this->tcp_buf_) {
     this->tcp_buf_ = std::unique_ptr<RingBuffer>(new RingBuffer(tcp_buf_size_, tcp_terminator_));
-    ESP_LOGCONFIG(TAG, "TCP buffer Using default size %zu, terminator '%s'", tcp_buf_size_, tcp_terminator_.c_str());
+    ESP_LOGCONFIG(TAG, "TCP buffer size %zu, terminator '%s'", tcp_buf_size_, tcp_terminator_.c_str());
   }
 
   struct sockaddr_storage bind_addr;
