@@ -25,8 +25,8 @@ public:
     void set_duty_cycle(uint16_t duty_cycle) { duty_cycle_ = duty_cycle; }
     void set_opened_binary_sensor(binary_sensor::BinarySensor *sensor) { this->opened_binary_sensor_ = sensor; }
     void set_closed_binary_sensor(binary_sensor::BinarySensor *sensor) { this->closed_binary_sensor_ = sensor; }
-    void set_in1_pin(InternalGPIOPin *pin) { this->in1_pin_ = pin; }
-    void set_in2_pin(InternalGPIOPin *pin) { this->in2_pin_ = pin; }
+    void set_in1_pin(GPIOPin *pin) { this->in1_pin_ = pin; }
+    void set_in2_pin(GPIOPin *pin) { this->in2_pin_ = pin; }
     void set_max_duration(uint32_t seconds) {
         max_duration_ = seconds;
     }
@@ -45,8 +45,8 @@ protected:
 
     binary_sensor::BinarySensor *opened_binary_sensor_ = nullptr;
     binary_sensor::BinarySensor *closed_binary_sensor_ = nullptr;
-    InternalGPIOPin *in2_pin_ = nullptr;
-    InternalGPIOPin *in1_pin_ = nullptr;
+    GPIOPin *in2_pin_ = nullptr;
+    GPIOPin *in1_pin_ = nullptr;
     uint16_t duty_cycle_ = 100;
 
     enum MotorDirection {
