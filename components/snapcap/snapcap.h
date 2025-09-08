@@ -1,5 +1,5 @@
 #pragma once
-#include "esphome/components/tcp_server/tcp_server.h"
+#include "../tcp_server/tcp_server.h"
 #include "esphome/components/servo/servo.h"
 
 namespace esphome {
