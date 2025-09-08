@@ -23,6 +23,20 @@ void SnapCapComponent::dump_config() {
   LOG_SERVO(servo_);
 }
 
+void SnapCapComponent::setup(){
+  ESP_LOGD(TAG, "SnapCap version %s", firmware_version_);}
+  // Call parent setup for proper initialization
+  TCPServerComponent::setup();
+  // Add SnapCap-specific setup logic here if needed
+  if (servo_ != nullptr) {
+      ESP_LOGD(TAG, "Initial servo position: %f", SERVO_POSITION_CLOSED);
+      servo_->setup();
+      servo_->write(SERVO_POSITION_CLOSED); // Initial position
+  } else {
+      ESP_LOGW(TAG, "No servo configured for SnapCapComponent");
+  }
+}
+
 void SnapCapComponent::process_command(const std::string &command) {
     // Use a static buffer for all responses to minimize stack usage
     static char buf[32];
