@@ -52,6 +52,5 @@ async def to_code(config):
 
     servo = await cg.get_variable(config[CONF_SERVO_ID])
     cg.add(var.set_servo(servo))
-    await cg.register_component(servo, config)
 
     await cg.register_component(var, config)
