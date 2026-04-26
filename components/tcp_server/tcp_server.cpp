@@ -42,7 +42,11 @@ void TCPServerComponent::setup() {
       reinterpret_cast<struct sockaddr *>(&bind_addr), sizeof(bind_addr), htons(this->port_));
 #endif
 
+#if ESPHOME_VERSION_CODE >= VERSION_CODE(2026, 3, 0)
+    this->socket_ = socket::socket_ip_loop_monitored(SOCK_STREAM, PF_INET).release();
+#else
   this->socket_ = socket::socket_ip(SOCK_STREAM, PF_INET);
+#endif
 
   if (!this->socket_) {
     ESP_LOGE(TAG, "Failed to create TCP server socket");
@@ -53,7 +57,12 @@ void TCPServerComponent::setup() {
   if (this->socket_->setblocking(false) != 0) {
     ESP_LOGE(TAG, "Failed to set listener socket non-blocking: errno=%d", errno);
     this->socket_->close();
+#if ESPHOME_VERSION_CODE >= VERSION_CODE(2026, 3, 0)
+    delete this->socket_;
+    this->socket_ = nullptr;
+#else
     this->socket_.reset();
+#endif
     this->mark_failed();
     return;
   }
@@ -70,7 +79,12 @@ void TCPServerComponent::setup() {
   if (this->socket_->bind(reinterpret_cast<struct sockaddr *>(&bind_addr), bind_addrlen) != 0) {
     ESP_LOGE(TAG, "Failed to bind TCP server socket on port %u: errno=%d", this->port_, errno);
     this->socket_->close();
+#if ESPHOME_VERSION_CODE >= VERSION_CODE(2026, 3, 0)
+    delete this->socket_;
+    this->socket_ = nullptr;
+#else
     this->socket_.reset();
+#endif
     this->mark_failed();
     return;
   }
@@ -78,7 +92,12 @@ void TCPServerComponent::setup() {
   if (this->socket_->listen(2) != 0) {
     ESP_LOGE(TAG, "Failed to listen on TCP server socket: errno=%d", errno);
     this->socket_->close();
+#if ESPHOME_VERSION_CODE >= VERSION_CODE(2026, 3, 0)
+    delete this->socket_;
+    this->socket_ = nullptr;
+#else
     this->socket_.reset();
+#endif
     this->mark_failed();
     return;
   }
@@ -107,7 +126,12 @@ void TCPServerComponent::on_shutdown() {
   if (this->socket_) {
     this->socket_->shutdown(SHUT_RDWR);
     this->socket_->close();
+#if ESPHOME_VERSION_CODE >= VERSION_CODE(2026, 3, 0)
+    delete this->socket_;
+    this->socket_ = nullptr;
+#else
     this->socket_.reset();
+#endif
   }
 }
 

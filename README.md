@@ -17,7 +17,7 @@ This project is inspired by:
 
 ## Requirements
 
-- ESPHome `< 2026.3.0`. Version `2026.3` introduced breaking changes on the socket API.
+- ESPHome `>= 2022.3.0`.
 - Target board family: ESP8266
 
 ## Installation

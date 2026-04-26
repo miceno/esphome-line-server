@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <utility>
 #include "esphome/core/component.h"
+#include "esphome/core/version.h"
 #include "esphome/components/socket/socket.h"
 #include "esphome/components/tcp_server/ring_buffer.h"
 
@@ -64,7 +65,12 @@ protected:
     uint32_t tcp_flush_timeout_ms_ = 300;
     std::function<std::string(std::string)> tcp_timeout_callback_{};
     std::unique_ptr<esphome::tcp_server::RingBuffer> tcp_buf_;
+#if ESPHOME_VERSION_CODE >= VERSION_CODE(2026, 3, 0)
+    esphome::socket::ListenSocket *socket_{nullptr};
+#else
     std::unique_ptr<esphome::socket::Socket> socket_;
+#endif
+
     std::vector<Client> clients_;
     bool has_active_clients() const;
 };
