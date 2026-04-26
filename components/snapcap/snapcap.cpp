@@ -59,9 +59,12 @@ void SnapCapComponent::process_command(const std::string &command) {
     // Use a static buffer for all responses to minimize stack usage
     static char buf[32];
     std::string response;
+    auto send_err = [this]() {
+        this->send_response("*ERR\r\n");
+    };
+
     if (command.size() < 2 || command[0] != '>') {
-        response = "*ERR\r\n";
-        this->send_response(response);
+        send_err();
         return;
     }
     const char opcode = command[1];
@@ -69,8 +72,7 @@ void SnapCapComponent::process_command(const std::string &command) {
         // Open (small steps)
         if (servo_ == nullptr) {
             ESP_LOGW(TAG, "Received >O command but no servo is configured");
-            response = "*ERR\r\n";
-            this->send_response(response);
+            send_err();
             return;
         }
         response = "*O000\r\n";
@@ -81,8 +83,7 @@ void SnapCapComponent::process_command(const std::string &command) {
         // Force open (one step)
         if (servo_ == nullptr) {
             ESP_LOGW(TAG, "Received >o command but no servo is configured");
-            response = "*ERR\r\n";
-            this->send_response(response);
+            send_err();
             return;
         }
         response = "*o000\r\n";
@@ -93,8 +94,7 @@ void SnapCapComponent::process_command(const std::string &command) {
         // Close (small steps)
         if (servo_ == nullptr) {
             ESP_LOGW(TAG, "Received >C command but no servo is configured");
-            response = "*ERR\r\n";
-            this->send_response(response);
+            send_err();
             return;
         }
         response = "*C000\r\n";
@@ -105,8 +105,7 @@ void SnapCapComponent::process_command(const std::string &command) {
         // Force close (one step)
         if (servo_ == nullptr) {
             ESP_LOGW(TAG, "Received >c command but no servo is configured");
-            response = "*ERR\r\n";
-            this->send_response(response);
+            send_err();
             return;
         }
         response = "*c000\r\n";
@@ -121,8 +120,7 @@ void SnapCapComponent::process_command(const std::string &command) {
         // Abort command
         if (servo_ == nullptr) {
             ESP_LOGW(TAG, "Received >A command but no servo is configured");
-            response = "*ERR\r\n";
-            this->send_response(response);
+            send_err();
             return;
         }
         response = "*A000\r\n";
@@ -133,8 +131,7 @@ void SnapCapComponent::process_command(const std::string &command) {
         // Set brightness
         uint16_t val = 0;
         if (!parse_3_digits(command, 2, val) || val > 255) {
-            response = "*ERR\r\n";
-            this->send_response(response);
+            send_err();
             return;
         }
         brightness_ = static_cast<uint8_t>(val);
@@ -166,8 +163,7 @@ void SnapCapComponent::process_command(const std::string &command) {
         // Move servo position
         uint16_t pos = 0;
         if (!parse_3_digits(command, 2, pos)) {
-            response = "*ERR\r\n";
-            this->send_response(response);
+            send_err();
             return;
         }
         servo_position_ = pos;
@@ -177,8 +173,7 @@ void SnapCapComponent::process_command(const std::string &command) {
         // Alternate wifi/serial
         if (servo_ == nullptr) {
             ESP_LOGW(TAG, "Received >S command but no servo is configured");
-            response = "*ERR\r\n";
-            this->send_response(response);
+            send_err();
             return;
         }
         servo_status_ = servo_->has_reached_target() ? MS_STOPPED : MS_RUNNING;
@@ -188,7 +183,8 @@ void SnapCapComponent::process_command(const std::string &command) {
         // Alternate wifi/serial
         response = "*W000\r\n";
     } else {
-        response = "*ERR\r\n";
+        send_err();
+        return;
     }
     this->send_response(response);
 }
