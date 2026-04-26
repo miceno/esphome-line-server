@@ -6,12 +6,13 @@ namespace esphome {
   namespace tcp_server {
 
     RingBuffer::RingBuffer(size_t size, const std::string &terminator)
-        : size_(size), buf_(new uint8_t[size]), terminator_(terminator) {}
+        : size_(size < 2 ? 2 : size), buf_(new uint8_t[size_]), terminator_(terminator) {}
 
     bool RingBuffer::write(uint8_t byte) {
       if (free_space() == 0)
         return false;
-      buf_[index_(head_++)] = byte;
+      buf_[head_] = byte;
+      head_ = index_(head_ + 1);
       last_write_time_ = ::esphome::millis();
       return true;
     }
@@ -27,29 +28,33 @@ namespace esphome {
     }
 
     std::string RingBuffer::read_line() {
-        size_t pos = tail_;
+        if (terminator_.empty())
+            return "";
 
-        while (pos != head_) {
-            // Try to match terminator starting from pos
+        const size_t avail = available();
+        if (avail < terminator_.size())
+            return "";
+
+        const size_t last_start = avail - terminator_.size();
+        for (size_t offset = 0; offset <= last_start; ++offset) {
             bool match = true;
             for (size_t i = 0; i < terminator_.size(); ++i) {
-                if ((pos + i) == head_ || buf_[index_(pos + i)] != terminator_[i]) {
+                if (buf_[index_(tail_ + offset + i)] != static_cast<uint8_t>(terminator_[i])) {
                     match = false;
                     break;
                 }
             }
 
-            if (match) {
-                size_t line_len = (pos + terminator_.size()) - tail_;
-                std::string line(line_len, '\0');
-                for (size_t i = 0; i < line_len; ++i)
-                    line[i] = static_cast<char>(buf_[index_(tail_ + i)]);
+            if (!match)
+                continue;
 
-                tail_ += line_len;
-                return line;
-            }
+            const size_t line_len = offset + terminator_.size();
+            std::string line(line_len, '\0');
+            for (size_t i = 0; i < line_len; ++i)
+                line[i] = static_cast<char>(buf_[index_(tail_ + i)]);
 
-            pos++;
+            tail_ = index_(tail_ + line_len);
+            return line;
         }
 
         return "";
@@ -76,40 +81,35 @@ namespace esphome {
     }
 
     RingBuffer::BufferSlice RingBuffer::next_write_chunk() {
-        if (head_ >= tail_) {
-            // Case 1: Normal case, head is ahead of tail
-            size_t space = (tail_ == 0) ? size_ - head_ - 1 : size_ - head_;
-            if (space > 0)
-                return {buf_.get() + head_, space};
+        if (is_full())
+            return {nullptr, 0};
 
-            // Wrap-around fallback: try from the beginning
-            if (tail_ > 1) {
-                head_ = 0;
-                size_t wrap_space = tail_ - 1;
-                return {buf_.get(), wrap_space};
-            }
-        } else {
-            // Case 2: tail is ahead of head, space is straightforward
-            size_t space = tail_ - head_ - 1;
-            if (space > 0)
-                return {buf_.get() + head_, space};
+        if (head_ >= tail_) {
+            size_t contiguous = size_ - head_;
+            if (tail_ == 0)
+                contiguous -= 1;  // Keep one byte empty to distinguish full/empty.
+            return {buf_.get() + head_, contiguous};
         }
 
-        // Buffer is full or cannot be safely wrapped
-        return {nullptr, 0};
+        return {buf_.get() + head_, tail_ - head_ - 1};
     }
 
     void RingBuffer::advance_head(size_t n) {
-        head_ += n;
+        const size_t room = free_space();
+        if (n > room)
+            n = room;
+        head_ = index_(head_ + n);
         last_write_time_ = ::esphome::millis();
     }
 
     size_t RingBuffer::available() const {
-      return head_ - tail_;
+      if (head_ >= tail_)
+        return head_ - tail_;
+      return size_ - (tail_ - head_);
     }
 
     size_t RingBuffer::free_space() const {
-      return size_ - (head_ - tail_) - 1;  // Leave 1-byte gap to distinguish full/empty
+      return (size_ - available()) - 1;  // Leave 1-byte gap to distinguish full/empty.
     }
 
     void RingBuffer::clear() {
