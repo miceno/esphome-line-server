@@ -44,6 +44,12 @@ protected:
     void motor_close_();
     void motor_abort_();
 
+    // Helper methods for reduced duplication
+    bool is_opened_() const;
+    bool is_closed_() const;
+    void motor_start_(MotorDirection direction, bool in1_state, bool in2_state);
+    void check_and_abort_on_limit_();
+
     binary_sensor::BinarySensor *opened_binary_sensor_ = nullptr;
     binary_sensor::BinarySensor *closed_binary_sensor_ = nullptr;
     GPIOPin *in2_pin_ = nullptr;
