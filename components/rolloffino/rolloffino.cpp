@@ -86,12 +86,20 @@ void RolloffinoComponent::process_command(const std::string &command){
     else if (command == "(SET:OPEN:ON)"){
         ESP_LOGV(TAG, "Open cover");
         response = "(ACK:OPEN:ON)";
-        this->motor_open_();
+        if (this->opened_binary_sensor_ != nullptr && this->opened_binary_sensor_->state) {
+            ESP_LOGW(TAG, "Ignoring OPEN command: opened limit sensor is active");
+        } else {
+            this->motor_open_();
+        }
     }
     else if (command == "(SET:CLOSE:ON)"){
         ESP_LOGV(TAG, "Close cover");
         response = "(ACK:CLOSE:ON)";
-        this->motor_close_();
+        if (this->closed_binary_sensor_ != nullptr && this->closed_binary_sensor_->state) {
+            ESP_LOGW(TAG, "Ignoring CLOSE command: closed limit sensor is active");
+        } else {
+            this->motor_close_();
+        }
     }
     else if (command == "(SET:ABORT:ON)"){
         ESP_LOGV(TAG, "Abort");
@@ -149,6 +157,18 @@ void RolloffinoComponent::motor_abort_() {
 void RolloffinoComponent::handle_motor_() {
   if (!this->motor_active_ || this->motor_direction_ == MOTOR_NONE)
     return;
+
+  if (this->motor_direction_ == MOTOR_OPEN && this->opened_binary_sensor_ != nullptr && this->opened_binary_sensor_->state) {
+    this->motor_abort_();
+    ESP_LOGW(TAG, "Motor movement aborted: opened limit sensor reached");
+    return;
+  }
+
+  if (this->motor_direction_ == MOTOR_CLOSE && this->closed_binary_sensor_ != nullptr && this->closed_binary_sensor_->state) {
+    this->motor_abort_();
+    ESP_LOGW(TAG, "Motor movement aborted: closed limit sensor reached");
+    return;
+  }
 
   uint32_t now = esphome::micros();
   const uint64_t elapsed_us = static_cast<uint32_t>(now - this->motor_move_start_time_);
