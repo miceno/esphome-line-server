@@ -64,7 +64,13 @@ void TCPServerComponent::accept() {
     client_sock->setblocking(false);
     int enable = 1;
     client_sock->setsockopt(IPPROTO_TCP, TCP_NODELAY, &enable, sizeof(int));
-    std::string identifier = client_sock->getpeername();
+#if ESPHOME_VERSION_CODE >= VERSION_CODE(2026, 1, 0)
+    std::string identifier = std::string{esphome::socket::SOCKADDR_STR_LEN, 0};
+    auto identifier_span = std::span<char, esphome::socket::SOCKADDR_STR_LEN>(identifier.data(), identifier.size());
+    identifier.resize(client_sock->getpeername_to(identifier_span));
+#else
+    std::string identifier = socket->getpeername();
+#endif
     this->clients_.emplace_back(std::move(client_sock), identifier);
 
     ESP_LOGD(TAG, "New client connected: %s", identifier.c_str());
