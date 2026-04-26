@@ -123,14 +123,14 @@ void TCPServerComponent::accept() {
         return;
 
     if (client_sock->setblocking(false) != 0) {
-        ESP_LOGW(TAG, "Could not set accepted socket non-blocking: errno=%d", errno);
+        ESP_LOGW(this->log_tag_.c_str(), "Could not set accepted socket non-blocking: errno=%d", errno);
         client_sock->close();
         return;
     }
 
     int enable = 1;
     if (client_sock->setsockopt(IPPROTO_TCP, TCP_NODELAY, &enable, sizeof(int)) != 0) {
-        ESP_LOGW(TAG, "Could not set TCP_NODELAY on accepted socket: errno=%d", errno);
+        ESP_LOGW(this->log_tag_.c_str(), "Could not set TCP_NODELAY on accepted socket: errno=%d", errno);
     }
 #if ESPHOME_VERSION_CODE >= VERSION_CODE(2026, 1, 0)
     std::string identifier = std::string{esphome::socket::SOCKADDR_STR_LEN, 0};
@@ -141,7 +141,7 @@ void TCPServerComponent::accept() {
 #endif
     this->clients_.emplace_back(std::move(client_sock), identifier);
 
-    ESP_LOGD(TAG, "New client connected: %s", identifier.c_str());
+    ESP_LOGD(this->log_tag_.c_str(), "New client connected: %s", identifier.c_str());
 }
 
 void TCPServerComponent::cleanup() {
@@ -175,17 +175,17 @@ void TCPServerComponent::read() {
             if (len > 0) {
                 size_t written = this->tcp_buf_->write_array(temp, len);
                 if (written < static_cast<size_t>(len)) {
-                    ESP_LOGW(TAG, "TCP buffer overflow — dropped %zu bytes", len - written);
+                    ESP_LOGW(this->log_tag_.c_str(), "TCP buffer overflow — dropped %zu bytes", len - written);
                 }
             } else if (len == 0 || errno == ECONNRESET || errno == ENOTCONN) {
-                ESP_LOGD(TAG, "Client %s disconnected during read", client.identifier.c_str());
+                ESP_LOGD(this->log_tag_.c_str(), "Client %s disconnected during read", client.identifier.c_str());
                 client.disconnected = true;
                 break;
             } else if (errno == EWOULDBLOCK || errno == EAGAIN) {
-                ESP_LOGV(TAG, "No more data available from this client");
+                ESP_LOGV(this->log_tag_.c_str(), "No more data available from this client");
                 break;
             } else {
-                ESP_LOGW(TAG, "Error reading from client %s: errno=%d", client.identifier.c_str(), errno);
+                ESP_LOGW(this->log_tag_.c_str(), "Error reading from client %s: errno=%d", client.identifier.c_str(), errno);
                 client.disconnected = true;
                 break;
             }
@@ -197,7 +197,7 @@ void TCPServerComponent::send_response(const std::string &response) {
     if (response.empty())
         return;
 
-    ESP_LOGD(TAG, "Queue response %s", response.c_str());
+    ESP_LOGD(this->log_tag_.c_str(), "Queue response %s", response.c_str());
     for (Client &client : this->clients_) {
         if (client.disconnected)
             continue;
@@ -207,7 +207,7 @@ void TCPServerComponent::send_response(const std::string &response) {
         }
 
         if (client.tx_buffer.size() + response.size() > MAX_TX_BUFFER_SIZE) {
-            ESP_LOGW(TAG, "TX buffer overflow for client %s, disconnecting", client.identifier.c_str());
+            ESP_LOGW(this->log_tag_.c_str(), "TX buffer overflow for client %s, disconnecting", client.identifier.c_str());
             client.disconnected = true;
             continue;
         }
@@ -234,14 +234,14 @@ void TCPServerComponent::flush_tcp_buffer() {
             std::string partial = tcp_buf_->read_partial();
             std::string processed = this->tcp_timeout_callback_(partial);
             if (!processed.empty()) {
-                ESP_LOGW(TAG, "TCP [timeout flush]: \"%s\"", processed.c_str());
+                ESP_LOGW(this->log_tag_.c_str(), "TCP [timeout flush]: \"%s\"", processed.c_str());
                 this->process_command(processed);
             } else {
-                ESP_LOGW(TAG, "TCP input timed out and was discarded by lambda");
+                ESP_LOGW(this->log_tag_.c_str(), "TCP input timed out and was discarded by lambda");
             }
         } else {
             std::string partial = tcp_buf_->read_partial();
-            ESP_LOGW(TAG, "TCP input timed out without terminator — discarding partial: size=%zu", partial.size());
+            ESP_LOGW(this->log_tag_.c_str(), "TCP input timed out without terminator — discarding partial: size=%zu", partial.size());
         }
         tcp_buf_->clear();
     }
@@ -267,7 +267,7 @@ void TCPServerComponent::flush_pending_writes() {
             }
 
             if (sent == 0 || errno == ECONNRESET || errno == ENOTCONN) {
-                ESP_LOGD(TAG, "Client %s disconnected during write", client.identifier.c_str());
+                ESP_LOGD(this->log_tag_.c_str(), "Client %s disconnected during write", client.identifier.c_str());
                 client.disconnected = true;
                 break;
             }
@@ -276,7 +276,7 @@ void TCPServerComponent::flush_pending_writes() {
                 break;
             }
 
-            ESP_LOGW(TAG, "Error writing to client %s: errno=%d", client.identifier.c_str(), errno);
+            ESP_LOGW(this->log_tag_.c_str(), "Error writing to client %s: errno=%d", client.identifier.c_str(), errno);
             client.disconnected = true;
             break;
         }
