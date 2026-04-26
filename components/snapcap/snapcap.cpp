@@ -166,7 +166,14 @@ void SnapCapComponent::process_command(const std::string &command) {
             send_err();
             return;
         }
+        if (servo_ == nullptr) {
+            ESP_LOGW(TAG, "Received >N command but no servo is configured");
+            send_err();
+            return;
+        }
         servo_position_ = pos;
+        servo_status_ = MS_RUNNING;
+        servo_->write(pos);
         snprintf(buf, sizeof(buf), "*N%03d\r\n", servo_position_);
         response = buf;
     } else if (opcode == 'S') {
