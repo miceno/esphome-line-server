@@ -114,7 +114,7 @@ void RolloffinoComponent::process_command(const std::string &command){
         response = "(ACK:AUXSTATE:OFF)";
     } else {
         ESP_LOGE(TAG, "Unknown command: %s", command.c_str());
-        response = "(NAK:ERROR:" + command + ")";
+        response = "(NAK:ERROR:Unknown command)";
     }
 
     this->send_response(response);
