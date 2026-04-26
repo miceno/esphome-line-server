@@ -10,20 +10,11 @@
 #include <utility>
 #include "esphome/core/component.h"
 #include "esphome/components/socket/socket.h"
-#include "esphome/components/network/util.h"
 #include "esphome/components/tcp_server/ring_buffer.h"
 
 namespace esphome {
     namespace tcp_server {
 
-#define LOG_TCP_SERVER(prefix, type, obj) \
-  if ((obj) != nullptr) { \
-    ESP_LOGCONFIG(TAG, "  Listening on: %s:%u", esphome::network::get_use_address(), this->port_); \
-    ESP_LOGCONFIG(TAG, "  TCP buffer: size=%zu, terminator=%s", \
-      tcp_buf_size_, \
-      esphome::format_hex_pretty((const uint8_t*)tcp_terminator_.data(), tcp_terminator_.size()).c_str()); \
-    ESP_LOGCONFIG(TAG, "  TCP flush timeout: %ums", tcp_flush_timeout_ms_); \
-  }
 
 class TCPServerComponent : public esphome::Component {
 public:
@@ -45,10 +36,14 @@ public:
     float get_setup_priority() const override { return esphome::setup_priority::AFTER_WIFI; }
 
 protected:
+    struct Client;
     void accept();
     void cleanup();
     void read();
     void flush_tcp_buffer();
+    void flush_pending_writes();
+    void close_client(Client &client);
+    void dump_tcp_server_config_(const char *tag) const;
 
     struct Client {
         Client(std::unique_ptr<esphome::socket::Socket> socket, std::string identifier)
@@ -59,8 +54,6 @@ protected:
         size_t tx_offset = 0;
         bool disconnected = false;
     };
-    void flush_pending_writes();
-    void close_client(Client &client);
 
     uint16_t port_{};
     size_t tcp_buf_size_ = 512;

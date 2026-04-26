@@ -33,8 +33,7 @@ void RolloffinoComponent::loop() {
 }
 
 void RolloffinoComponent::dump_config() {
-  LOG_TCP_SERVER(TAG, "Rolloffino", this);
-
+  this->TCPServerComponent::dump_tcp_server_config_(TAG);
   std::array<char, 128> opened_sensor_obj_id{};
   std::array<char, 128> closed_sensor_obj_id{};
 

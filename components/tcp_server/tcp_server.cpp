@@ -1,5 +1,6 @@
 #include "tcp_server.h"
 #include "esphome/core/hal.h"
+#include "esphome/core/helpers.h"
 #include "esphome/core/log.h"
 #include "esphome/core/version.h"
 #include "esphome/components/network/util.h"
@@ -14,6 +15,15 @@ namespace esphome {
 
 static const char *const TAG = "tcp_server";
 static const size_t MAX_TX_BUFFER_SIZE = 2048;
+
+void TCPServerComponent::dump_tcp_server_config_(const char *tag) const {
+  ESP_LOGCONFIG(tag, "  Listening on: %s:%u", esphome::network::get_use_address(), this->port_);
+  ESP_LOGCONFIG(tag, "  TCP buffer: size=%zu, terminator=%s", this->tcp_buf_size_,
+                esphome::format_hex_pretty((const uint8_t *) this->tcp_terminator_.data(),
+                                           this->tcp_terminator_.size())
+                    .c_str());
+  ESP_LOGCONFIG(tag, "  TCP flush timeout: %ums", this->tcp_flush_timeout_ms_);
+}
 
 void TCPServerComponent::setup() {
   ESP_LOGCONFIG(TAG, "Setting up TCP server...");
@@ -48,6 +58,11 @@ void TCPServerComponent::setup() {
     return;
   }
   int enable = 1;
+  int reuse = 1;
+  if (this->socket_->setsockopt(SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(int)) != 0) {
+    ESP_LOGW(TAG, "Failed to set SO_REUSEADDR on listener: errno=%d", errno);
+  }
+
   if (this->socket_->setsockopt(IPPROTO_TCP, TCP_NODELAY, &enable, sizeof(int)) != 0) {
     ESP_LOGW(TAG, "Failed to set TCP_NODELAY on listener: errno=%d", errno);
   }

@@ -41,8 +41,6 @@ REQUIRES_ESPHOME_VERSION = cv.require_esphome_version(2022, 3, 0)
 # Validate component schema
 TCP_SERVER_SCHEMA = cv.Schema(
     {
-        # The ID of the TCP server component is not needed since this element will not
-        # be referenced by other components.
 
         cv.Optional(CONF_PORT, default=8888): cv.port,
         cv.Optional(CONF_TCP_BUFFER_SIZE, default=256): cv.All(
