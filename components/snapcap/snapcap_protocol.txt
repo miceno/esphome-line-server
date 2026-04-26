@@ -1,0 +1,49 @@
+Typical usage on the command prompt:
+Send     : >O000\n      //open, moving the servo to open position in small steps
+Receive  : *O000\n      //confirming command received
+
+Send     : >o000\n      //force open, moving the servo to open position in one step
+Receive  : *o000\n      //confirming command received
+
+Send     : >C000\n      //close, moving the servo to closed position in small steps
+Receive  : *C000\n      //confirming command received
+
+Send     : >c000\n      //force close, moving the servo to closed position in one step
+Receive  : *c000\n      //confirming command received
+
+Send     : >A000\n      //User abort, stops the servo movement
+Receive  : *A000\n      //confirming command received
+
+Send     : >P000\n      //ping
+Receive  : *P<deviceid>000\n      //confirming alive, 2 digit device id
+
+Send     : >S000\n      //request state
+Receive  : *S000\n    //returned state
+Return   : *SMLC\n
+           M  = servo status( 0 stopped, 1 running)
+           L  = light status( 0 off, 1 on)
+           C  = Cover Status( 0 moving, 1 open, 2 closed, 3 Timed out, 4 Open circuit, 5 Overcurrent, 6 User abort)
+
+Send     : >B128\n      //set brightness 128
+Receive  : *B128\n      //confirming brightness set to 128
+
+Send     : >J000\n      //get brightness
+Receive  : *J128\n      //brightness value of 128 (assuming as set from above)
+
+Send     : >L000\n      //turn light on (uses set brightness value)
+Receive  : *L000\n      //confirms light turned on
+
+Send     : >D000\n      //turn light off (brightness value should not be changed)
+Receive  : *D000\n      //confirms light turned off.
+
+Send     : >V000\n      // Get firmware version.
+Receive  : *V103\n      // return firmware version.
+
+Send     : >M000\n      //get position of servo
+Receive  : *MPPP\n      //PPP = position of servo
+
+Send     : >NPPP\n      //move position of servo
+Receive  : *NPPP\n      //PPP = new position of servo
+
+Send     : >W000\n      //alternate between wifi and serial. Default is wifi
+Receive  : *W000\n      // confirms command

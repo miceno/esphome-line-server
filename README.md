@@ -1,183 +1,206 @@
-# Line Server for ESPHome
+# ESPHome TCP Components (ESP8266)
 
-**LineServer** is a custom ESPHome component based on [@oxan’s stream_server](https://github.com/oxan/esphome-stream-server). 
-It acts as a transparent UART-to-TCP line-oriented bridge, 
-with extended support for line terminators, timeouts, and directional buffers. 
-This makes it ideal for RS-232-based command protocols like RIO (Russound), 
-which use line-based communication patterns.
+This repository contains external ESPHome components for TCP-based device protocols on ESP8266.
 
-The component listens on a configurable TCP port and forwards lines between UART and TCP clients, 
-flushing on a terminator or idle timeout.
+## Project Status
 
----
+- `tcp_server` is the maintained base component in this repo.
+- `rolloffino` and `snapcap` build on top of `tcp_server`.
+- `line_server` is legacy in this repository and is not the focus for new work.
 
-## Features
+## Attribution
 
-- Bi-directional UART–TCP communication
-- Independent ring buffers for UART and TCP
-- Configurable line terminators for each direction
-- Idle flush timeout to handle incomplete lines
-- Optional lambda handlers for custom processing of incomplete lines
-- TCP client tracking with optional sensors
-- Multiple UARTs supported
-- Compatible with Wi-Fi and Ethernet
+This project is inspired by:
 
----
+- [`esphome-line-server`](https://github.com/gstos/esphome-line-server) by `gstos`
+- [`esphome-stream-server`](https://github.com/oxan/esphome-stream-server) by `oxan`
 
 ## Requirements
 
-- ESPHome version **2022.3.0** or newer
-
----
+- ESPHome `>= 2022.3.0`.
+- Target board family: ESP8266
 
 ## Installation
 
 ```yaml
 external_components:
-  - source: github://gstos/esphome-line-server
-    components: [line_server]
+  - source: github://miceno/esphome-line-server
+    components: [tcp_server, rolloffino, snapcap]
 ```
 
-## Basic Usage
+## Components
+
+| Component | Role |
+|---|---|
+| `tcp_server` | Base TCP server runtime (socket handling, ring buffer, command framing, timeout flush). |
+| `rolloffino` | Rolloffino roof controller protocol implementation on top of `tcp_server`. |
+| `snapcap` | SnapCap protocol implementation on top of `tcp_server` with servo/light control. |
+
+## `tcp_server` (base)
+
+`tcp_server` is a reusable base component for line-delimited TCP command protocols.
+It is used by `rolloffino` and `snapcap` for shared networking behavior.
+
+### Shared TCP Options
+
+These options are inherited by derived components (`snapcap`, `rolloffino`):
+
+| Key | Type | Default | Description |
+|---|---|---|---|
+| `port` | integer | `8888` | TCP listening port. |
+| `tcp_buffer_size` | power-of-2 int | `256` | Ring buffer size for incoming TCP data. |
+| `tcp_terminator` | string (<= 4 bytes) | `"\r"` | Terminator used to split commands from the input stream. |
+| `tcp_timeout` | duration | `300ms` | Idle timeout for partial data in buffer. |
+| `tcp_timeout_lambda` | lambda | unset | Optional lambda to transform or discard timed-out partial input. |
+
+### Timeout Lambda Behavior
+
+When `tcp_timeout` is reached and no terminator arrived:
+
+- If `tcp_timeout_lambda` is set, the partial buffer is passed to the lambda.
+- If the lambda returns a non-empty string, that returned command is processed.
+- If it returns an empty string, partial input is discarded.
+- Without a lambda, partial input is discarded.
+
+Example:
 
 ```yaml
-uart:
-  id: uart_bus
-  tx_pin: GPIO17
-  rx_pin: GPIO16
-  baud_rate: 9600
-
-line_server:
-  uart_id: uart_bus
+tcp_timeout_lambda: |-
+  // partial is the timed-out input chunk
+  if (partial.size() < 3) return std::string();
+  return partial;
 ```
 
-## Configuration Options
+## `rolloffino`
 
-| Key                   | Type              | Default | Description                                                  |
-|-----------------------|-------------------|---------|--------------------------------------------------------------|
-| `port`                | integer           | `6638`  | TCP server port                                              |
-| `uart_terminator`     | string            | `"\r\n"`| Terminator to flush UART buffer to TCP                       |
-| `uart_buffer_size`    | power of 2 int    | `256`   | Buffer size for UART input (in addition to RX buffer)        |
-| `uart_timeout`        | duration          | `500ms` | Time before incomplete UART messages are flushed             |
-| `uart_timeout_lambda` | lambda            | emtpy   | Hook for addressing of incomplete content received from UART |
-| `tcp_buffer_size`     | power of 2 int    | `256`   | Buffer size for TCP input                                    |
-| `tcp_terminator`      | string            | `"\r"`  | Terminator to flush TCP buffer to UART                       |
-| `tcp_timeout`         | duration          | `300ms` | Time before incomplete TCP messages are flushed              |
-| `tcp_timeout_lambda`  | lambda            | emtpy   | Hook for addressing of incomplete content received from TCP  |
+`rolloffino` exposes a Rolloffino-compatible TCP protocol for roof open/close control using two output pins and two limit sensors.
 
-### Example with all options:
+The `indi-rolloffino` driver is a popular third-party [INDI](https://indilib.org/) driver designed for Arduino-based, roll-off roof observatory controllers, often utilizing linear actuators. It operates within the `indi-3rdparty` [repository](https://github.com/indilib/indi-3rdparty), which houses drivers that have external dependencies or are maintained by community members rather than the core INDI team.
 
-```yaml
-uart:
-  id: uart_bus
-  tx_pin: GPIO17
-  rx_pin: GPIO16
-  baud_rate: 9600
+### Rolloffino Options
 
-line_server:
-  uart_id: uart_bus
-  port: 7000                        # TCP port (default: 6638)
-  uart_buffer_size: 512            # Must be power of 2
-  tcp_buffer_size: 512             # Must be power of 2
-  uart_terminator: "\r\n"          # Flush UART buffer on this sequence
-  tcp_terminator: "\r"             # Flush TCP buffer on this sequence
-  uart_timeout: 500ms              # Flush UART partial line after idle
-  tcp_timeout: 300ms               # Flush TCP partial line after idle
+| Key | Type | Default | Description |
+|---|---|---|---|
+| `id` | id | required | Component ID. |
+| `opened_sensor` | binary sensor id | required | Sensor indicating roof fully opened. |
+| `closed_sensor` | binary sensor id | required | Sensor indicating roof fully closed. |
+| `in1` | internal GPIO output | required | Motor driver IN1 pin. |
+| `in2` | internal GPIO output | required | Motor driver IN2 pin. |
+| `duty_cycle` | int 0..100 | `100` | Duty cycle percentage. |
+| `max_duration` | duration | `30s` | Maximum movement time before abort. |
 
-  uart_timeout_lambda: |-
-    return "[UART TIMEOUT]";       # Optional: override stale UART line
+`rolloffino` also accepts all shared `tcp_server` options.
 
-  tcp_timeout_lambda: |-
-    return "[TCP TIMEOUT]";        # Optional: override stale TCP line
-```
-
-### Example: Timeout Lambda for Incomplete Lines
-
-You can use a lambda to **process, modify, or preserve** partial messages that timeout without a terminator.
-
-#### Forward the partial message as-is:
-
-```yaml
-line_server:
-  uart_id: uart_bus
-  uart_timeout_lambda: |-
-    return partial;  # Just forward the partial line
-```
-
-#### Add a suffix to incomplete messages:
-
-```yaml
-line_server:
-  uart_id: uart_bus
-  uart_timeout_lambda: |-
-    return partial + " [incomplete]";
-```
-
-#### Drop very short lines:
-
-```yaml
-line_server:
-  uart_id: uart_bus
-  uart_timeout_lambda: |-
-    if (partial.length() < 5) return "";  // discard
-    return partial;
-```
-
-## Sensors
-
-### Binary Sensor: Client Connected
+### Example
 
 ```yaml
 binary_sensor:
-  - platform: line_server
-    connected:
-      name: TCP Client Connected
+  - platform: gpio
+    id: opened_binary_sensor
+    pin:
+      number: D1
+      inverted: true
+      mode:
+        input: true
+        pullup: true
+
+  - platform: gpio
+    id: closed_binary_sensor
+    pin:
+      number: D2
+      inverted: true
+      mode:
+        input: true
+        pullup: true
+
+rolloffino:
+  id: roof
+  port: 8888
+  in1: D5
+  in2: D6
+  duty_cycle: 80
+  opened_sensor: opened_binary_sensor
+  closed_sensor: closed_binary_sensor
+  max_duration: 30s
+  tcp_terminator: ")"
 ```
 
-### Sensor: Connection Count
+## `snapcap`
+
+`snapcap` implements a TCP protocol for dust-cap/flat-panel style devices with servo position and light state control.
+
+The [INDI](https://indilib.org/) SnapCap driver is a software component in the INDI (Instrument-Neutral Distributed Interface) system. It manages a motorized telescope dust cover and light source, known as a "Gemini SnapCap". It allows astrophotography software, like KStars/Ekos, to automatically open, close, and use the cap for calibration flat frames.
+
+### SnapCap Options
+
+| Key | Type | Default | Description |
+|---|---|---|---|
+| `id` | id | required | Component ID. |
+| `servo_id` | servo id | required | Servo used for cap movement. |
+| `device_id` | enum/int | `FLIP_FLAT` (`99`) | Protocol device identifier. |
+| `brightness` | int 0..255 | `128` | Initial brightness value. |
+| `max_degrees` | int 1..999 | `270` | Maximum logical servo range. |
+| `position` | int 0..999 | `0` | Initial logical position (runtime clamped to `0..max_degrees`). |
+
+`snapcap` also accepts all shared `tcp_server` options.
+
+### `snapcap.device_id` accepted values
+
+| Name | Value |
+|---|---|
+| `FLAT_MAN_L` | `10` |
+| `FLAT_MAN_XL` | `15` |
+| `FLAT_MAN` | `19` |
+| `FLIP_DUST` | `98` |
+| `FLIP_FLAT` | `99` |
+
+YAML examples:
+
 ```yaml
-sensor:
-  - platform: line_server
-    connections:
-      name: TCP Client Count
+# Enum form (recommended)
+snapcap:
+  id: cap
+  servo_id: cap_servo
+  device_id: FLIP_FLAT
 ```
-
-## Multiple UARTs
-
-You can use multiple UARTs with separate line servers:
 
 ```yaml
-uart:
-  - id: uart1
-    rx_pin: GPIO16
-    tx_pin: GPIO17
-    baud_rate: 9600
-
-  - id: uart2
-    rx_pin: GPIO25
-    tx_pin: GPIO26
-    baud_rate: 19200
-
-line_server:
-  - uart_id: uart1
-    port: 7001
-
-  - uart_id: uart2
-    port: 7002
+# Numeric form
+snapcap:
+  id: cap
+  servo_id: cap_servo
+  device_id: 99
 ```
+
+### Example
+
+```yaml
+servo:
+  - id: cap_servo
+    pin: GPIO5
+    auto_detach_time: 0ms
+
+snapcap:
+  id: cap
+  servo_id: cap_servo
+  device_id: FLIP_FLAT
+  max_degrees: 270
+  brightness: 128
+  position: 0
+  port: 9999
+  tcp_terminator: "\r"
+
+number:
+  - platform: snapcap
+    snapcap_id: cap
+    name: "SnapCap Servo Position"
+    step: 1
+```
+
+For protocol details and command tables, see `components/snapcap/README.md`.
 
 ## Notes
 
-- Buffer sizes must be **powers of two**.
-- Terminators must be **≤ 4 bytes**, UTF-8 encoded.
-- The `*_timeout_lambda` allows customizing what is sent when an incomplete line is flushed. 
-  Returning an empty string means the data is discarded.
-- All data is treated as **raw** — no Telnet, RFC2217, or control sequences.
-- Notice that the UART buffer size implements an additional buffer on top of the ESPHome RX buffer.
-- For now, it is up for the consumer of the TCP API to handle "request -> response" cycles correctly. 
-  In the future, we may implement some sort of state handling to properly manage "request -> response" cycles correctly.
-  Have that in mind, specially if you are sending requests from multiple clients to the same UART.
-- Notice that the default behaviour is to **flush** the buffers on a timeout.
-  Consider this behaviour for protocols that expect a response to a command.
-- Originally based on [esphome-stream-server](https://github.com/oxan/esphome-stream-server) by @oxan.
-
+- `tcp_server` is intentionally the shared base for protocol behavior; use derived components for device-specific commands.
+- For protocol changes, keep shared socket/buffer behavior in `components/tcp_server/tcp_server.cpp` and command handling in derived components.
+- This repository still contains a `line_server` directory for historical compatibility, but active development is centered on `tcp_server` and its subclasses.
