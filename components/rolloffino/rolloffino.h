@@ -39,6 +39,11 @@ public:
     void loop() override;
 
 protected:
+    enum MotorDirection {
+        MOTOR_NONE,
+        MOTOR_OPEN,
+        MOTOR_CLOSE
+    };
     void handle_motor_();
     void motor_open_();
     void motor_close_();
@@ -56,11 +61,7 @@ protected:
     GPIOPin *in1_pin_ = nullptr;
     uint16_t duty_cycle_ = 100;
 
-    enum MotorDirection {
-        MOTOR_NONE,
-        MOTOR_OPEN,
-        MOTOR_CLOSE
-    };
+
     MotorDirection motor_direction_ = MOTOR_NONE;
     bool motor_active_ = false;
     // Movement timeout in seconds
