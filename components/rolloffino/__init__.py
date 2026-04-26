@@ -28,10 +28,8 @@ RolloffinoComponent = rolloffino_ns.class_("RolloffinoComponent",
                                               cg.Component)
 
 
-# Validate ESPHome version
-REQUIRES_ESPHOME_VERSION = cv.require_esphome_version(2022, 3, 0)
 # Validate only the rolloffino-specific schema additions
-ROLLOFFINO_SCHEMA = cv.Schema({
+CONFIG_SCHEMA = cv.Schema({
     cv.GenerateID(CONF_ID): cv.declare_id(RolloffinoComponent),
 
     cv.Required(CONF_OPENED_SENSOR): cv.use_id(binary_sensor.BinarySensor),
@@ -41,9 +39,6 @@ ROLLOFFINO_SCHEMA = cv.Schema({
     cv.Optional(CONF_DUTY_CYCLE, default="100"): cv.int_range(min=0, max=100),
     cv.Optional(CONF_MAX_DURATION, default="30s"): cv.positive_time_period_seconds,
 }).extend(tcp_server.TCP_SERVER_SCHEMA)
-
-# Compose the final schema by extending the base tcp_server schema
-CONFIG_SCHEMA = cv.All(REQUIRES_ESPHOME_VERSION, ROLLOFFINO_SCHEMA.schema)
 
 
 async def to_code(config):
