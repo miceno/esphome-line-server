@@ -47,9 +47,12 @@ void SnapCapComponent::setup(){
   TCPServerComponent::setup();
   // Add SnapCap-specific setup logic here if needed
   if (servo_ != nullptr) {
-      ESP_LOGD(TAG, "Initial servo position: %f", SERVO_POSITION_CLOSED);
-      servo_->setup();
-      servo_->write(SERVO_POSITION_CLOSED); // Initial position
+      ESP_LOGD(TAG, "Scheduling initial servo position: %f", SERVO_POSITION_CLOSED);
+      this->set_timeout(0, [this]() {
+          if (this->servo_ != nullptr) {
+              this->servo_->write(SERVO_POSITION_CLOSED);
+          }
+      });
   } else {
       ESP_LOGW(TAG, "No servo configured for SnapCapComponent");
   }
