@@ -7,13 +7,11 @@
 #include <vector>
 #include <functional>
 #include <algorithm>
+#include <utility>
 #include "esphome/core/component.h"
 #include "esphome/components/socket/socket.h"
 #include "esphome/components/network/util.h"
 #include "esphome/components/tcp_server/ring_buffer.h"
-
-using esphome::tcp_server::RingBuffer;
-using namespace esphome;
 
 namespace esphome {
     namespace tcp_server {
@@ -68,8 +66,8 @@ protected:
     size_t tcp_buf_size_ = 512;
     std::string tcp_terminator_ = "\r";
     uint32_t tcp_flush_timeout_ms_ = 300;
-    std::function<std::string(const std::string &)> tcp_timeout_callback_{};
-    std::unique_ptr<RingBuffer> tcp_buf_;
+    std::function<std::string(std::string)> tcp_timeout_callback_{};
+    std::unique_ptr<esphome::tcp_server::RingBuffer> tcp_buf_;
     std::unique_ptr<esphome::socket::Socket> socket_;
     std::vector<Client> clients_;
     bool has_active_clients() const;

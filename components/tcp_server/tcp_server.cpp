@@ -6,7 +6,8 @@
 #include "esphome/components/socket/socket.h"
 #include "esphome/components/socket/headers.h"
 
-using namespace esphome;
+#include <algorithm>
+#include <cerrno>
 
 namespace esphome {
     namespace tcp_server {
@@ -18,7 +19,7 @@ void TCPServerComponent::setup() {
   ESP_LOGCONFIG(TAG, "Setting up TCP server...");
 
   if (!this->tcp_buf_) {
-    this->tcp_buf_ = std::unique_ptr<RingBuffer>(new RingBuffer(tcp_buf_size_, tcp_terminator_));
+    this->tcp_buf_ = std::unique_ptr<esphome::tcp_server::RingBuffer>(new esphome::tcp_server::RingBuffer(tcp_buf_size_, tcp_terminator_));
     ESP_LOGCONFIG(TAG, "TCP buffer size %zu, terminator '%s'", tcp_buf_size_, tcp_terminator_.c_str());
   }
 
@@ -129,7 +130,7 @@ void TCPServerComponent::accept() {
 }
 
 void TCPServerComponent::cleanup() {
-  auto active = [](const Client &c) { return !c.disconnected; };
+  auto active = [](const Client &c) { return !c.disconnected && c.socket != nullptr; };
   auto cutoff = std::partition(this->clients_.begin(), this->clients_.end(), active);
   if (cutoff != this->clients_.end()) {
     for (auto it = cutoff; it != this->clients_.end(); ++it) {
@@ -149,6 +150,10 @@ void TCPServerComponent::read() {
     for (Client &client : this->clients_) {
         if (client.disconnected)
             continue;
+        if (!client.socket) {
+            client.disconnected = true;
+            continue;
+        }
 
         while (true) {
             ssize_t len = client.socket->read(temp, buf_size);
@@ -181,6 +186,10 @@ void TCPServerComponent::send_response(const std::string &response) {
     for (Client &client : this->clients_) {
         if (client.disconnected)
             continue;
+        if (!client.socket) {
+            client.disconnected = true;
+            continue;
+        }
 
         if (client.tx_buffer.size() + response.size() > MAX_TX_BUFFER_SIZE) {
             ESP_LOGW(TAG, "TX buffer overflow for client %s, disconnecting", client.identifier.c_str());
@@ -227,6 +236,10 @@ void TCPServerComponent::flush_pending_writes() {
     for (Client &client : this->clients_) {
         if (client.disconnected || client.tx_offset >= client.tx_buffer.size())
             continue;
+        if (!client.socket) {
+            client.disconnected = true;
+            continue;
+        }
 
         while (client.tx_offset < client.tx_buffer.size()) {
             ssize_t sent = client.socket->write(
@@ -261,6 +274,7 @@ void TCPServerComponent::flush_pending_writes() {
 }
 
 void TCPServerComponent::close_client(Client &client) {
+    client.disconnected = true;
     if (!client.socket)
         return;
 
@@ -274,7 +288,7 @@ void TCPServerComponent::close_client(Client &client) {
 
 bool TCPServerComponent::has_active_clients() const {
   for (const auto &client : this->clients_) {
-    if (!client.disconnected)
+    if (!client.disconnected && client.socket)
       return true;
   }
   return false;
