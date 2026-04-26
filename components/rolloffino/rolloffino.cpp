@@ -20,14 +20,7 @@ static const char *const TAG = "rolloffino";
 static const char *const VERSION = "V1.7-esp-wifimanager-magnet-DRV8871";
 
 void RolloffinoComponent::loop() {
-  this->accept();
-  if (this->clients_.size() > 0){
-      // TCP → buffer
-      this->read();
-      // buffer → processing
-      this->flush_tcp_buffer();
-      this->cleanup();
-  }
+  this->TCPServerComponent::loop();
   // Unified non-blocking motor steps
   this->handle_motor_();
 }
