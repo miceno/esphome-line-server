@@ -145,6 +145,8 @@ void RolloffinoComponent::handle_motor_() {
 }
 
 void RolloffinoComponent::setup() {
+  this->set_log_tag(TAG);
+
   ESP_LOGD(TAG, "Rolloffino version %s", VERSION);
   // Call parent setup for proper initialization
   TCPServerComponent::setup();
