@@ -12,6 +12,7 @@ namespace esphome {
     namespace tcp_server {
 
 static const char *const TAG = "tcp_server";
+static const size_t MAX_TX_BUFFER_SIZE = 2048;
 
 void TCPServerComponent::setup() {
   ESP_LOGCONFIG(TAG, "Setting up TCP server...");
@@ -31,29 +32,73 @@ void TCPServerComponent::setup() {
 #endif
 
   this->socket_ = socket::socket_ip(SOCK_STREAM, PF_INET);
-  this->socket_->setblocking(false);
-  int enable = 1;
-  this->socket_->setsockopt(IPPROTO_TCP, TCP_NODELAY, &enable, sizeof(int));
 
-  this->socket_->bind(reinterpret_cast<struct sockaddr *>(&bind_addr), bind_addrlen);
-  this->socket_->listen(8);
+  if (!this->socket_) {
+    ESP_LOGE(TAG, "Failed to create TCP server socket");
+    this->mark_failed();
+    return;
+  }
+
+  if (this->socket_->setblocking(false) != 0) {
+    ESP_LOGE(TAG, "Failed to set listener socket non-blocking: errno=%d", errno);
+    this->socket_->close();
+    this->socket_.reset();
+    this->mark_failed();
+    return;
+  }
+  int enable = 1;
+  if (this->socket_->setsockopt(IPPROTO_TCP, TCP_NODELAY, &enable, sizeof(int)) != 0) {
+    ESP_LOGW(TAG, "Failed to set TCP_NODELAY on listener: errno=%d", errno);
+  }
+
+  if (this->socket_->bind(reinterpret_cast<struct sockaddr *>(&bind_addr), bind_addrlen) != 0) {
+    ESP_LOGE(TAG, "Failed to bind TCP server socket on port %u: errno=%d", this->port_, errno);
+    this->socket_->close();
+    this->socket_.reset();
+    this->mark_failed();
+    return;
+  }
+
+  if (this->socket_->listen(2) != 0) {
+    ESP_LOGE(TAG, "Failed to listen on TCP server socket: errno=%d", errno);
+    this->socket_->close();
+    this->socket_.reset();
+    this->mark_failed();
+    return;
+  }
+
 }
 
 void TCPServerComponent::loop() {
+  if (this->is_failed() || !this->socket_)
+    return;
+
   this->accept();
-  if (this->clients_.size() > 0){
+  if (this->has_active_clients()) {
       this->read();
       this->flush_tcp_buffer();
-      this->cleanup();
+      this->flush_pending_writes();
   }
+  this->cleanup();
 }
 
 void TCPServerComponent::on_shutdown() {
-  for (const Client &client : this->clients_)
-    client.socket->shutdown(SHUT_RDWR);
+  for (Client &client : this->clients_) {
+    this->close_client(client);
+  }
+  this->clients_.clear();
+
+  if (this->socket_) {
+    this->socket_->shutdown(SHUT_RDWR);
+    this->socket_->close();
+    this->socket_.reset();
+  }
 }
 
 void TCPServerComponent::accept() {
+    if (!this->socket_)
+        return;
+
     struct sockaddr_storage client_addr;
     socklen_t client_addrlen = sizeof(client_addr);
     std::unique_ptr<socket::Socket> client_sock =
@@ -61,9 +106,16 @@ void TCPServerComponent::accept() {
     if (!client_sock)
         return;
 
-    client_sock->setblocking(false);
+    if (client_sock->setblocking(false) != 0) {
+        ESP_LOGW(TAG, "Could not set accepted socket non-blocking: errno=%d", errno);
+        client_sock->close();
+        return;
+    }
+
     int enable = 1;
-    client_sock->setsockopt(IPPROTO_TCP, TCP_NODELAY, &enable, sizeof(int));
+    if (client_sock->setsockopt(IPPROTO_TCP, TCP_NODELAY, &enable, sizeof(int)) != 0) {
+        ESP_LOGW(TAG, "Could not set TCP_NODELAY on accepted socket: errno=%d", errno);
+    }
 #if ESPHOME_VERSION_CODE >= VERSION_CODE(2026, 1, 0)
     std::string identifier = std::string{esphome::socket::SOCKADDR_STR_LEN, 0};
     auto identifier_span = std::span<char, esphome::socket::SOCKADDR_STR_LEN>(identifier.data(), identifier.size());
@@ -80,6 +132,9 @@ void TCPServerComponent::cleanup() {
   auto active = [](const Client &c) { return !c.disconnected; };
   auto cutoff = std::partition(this->clients_.begin(), this->clients_.end(), active);
   if (cutoff != this->clients_.end()) {
+    for (auto it = cutoff; it != this->clients_.end(); ++it) {
+      this->close_client(*it);
+    }
     this->clients_.erase(cutoff, this->clients_.end());
   }
 }
@@ -122,32 +177,19 @@ void TCPServerComponent::send_response(const std::string &response) {
     if (response.empty())
         return;
 
-    ESP_LOGD(TAG, "Send response %s", response.c_str());
+    ESP_LOGD(TAG, "Queue response %s", response.c_str());
     for (Client &client : this->clients_) {
         if (client.disconnected)
             continue;
 
-        ssize_t total_sent = 0;
-        while (total_sent < static_cast<ssize_t>(response.size())) {
-            ssize_t sent = client.socket->write(
-                reinterpret_cast<const uint8_t *>(response.data()) + total_sent,
-                response.size() - total_sent);
-            if (sent > 0) {
-                total_sent += sent;
-            } else if (sent == 0 || errno == ECONNRESET || errno == ENOTCONN) {
-                ESP_LOGD(TAG, "Client %s disconnected during write", client.identifier.c_str());
-                client.disconnected = true;
-                break;
-            } else if (errno == EWOULDBLOCK || errno == EAGAIN) {
-                ESP_LOGW(TAG, "Socket not ready for writing to client %s", client.identifier.c_str());
-                break;
-            } else {
-                ESP_LOGW(TAG, "Error writing to client %s: errno=%d", client.identifier.c_str(), errno);
-                client.disconnected = true;
-                break;
-            }
+        if (client.tx_buffer.size() + response.size() > MAX_TX_BUFFER_SIZE) {
+            ESP_LOGW(TAG, "TX buffer overflow for client %s, disconnecting", client.identifier.c_str());
+            client.disconnected = true;
+            continue;
         }
+        client.tx_buffer.append(response);
     }
+    this->flush_pending_writes();
 }
 
 void TCPServerComponent::flush_tcp_buffer() {
@@ -169,6 +211,7 @@ void TCPServerComponent::flush_tcp_buffer() {
             std::string processed = this->tcp_timeout_callback_(partial);
             if (!processed.empty()) {
                 ESP_LOGW(TAG, "TCP [timeout flush]: \"%s\"", processed.c_str());
+                this->process_command(processed);
             } else {
                 ESP_LOGW(TAG, "TCP input timed out and was discarded by lambda");
             }
@@ -179,6 +222,55 @@ void TCPServerComponent::flush_tcp_buffer() {
         tcp_buf_->clear();
     }
 }
+
+void TCPServerComponent::flush_pending_writes() {
+    for (Client &client : this->clients_) {
+        if (client.disconnected || client.tx_offset >= client.tx_buffer.size())
+            continue;
+
+        while (client.tx_offset < client.tx_buffer.size()) {
+            ssize_t sent = client.socket->write(
+                reinterpret_cast<const uint8_t *>(client.tx_buffer.data()) + client.tx_offset,
+                client.tx_buffer.size() - client.tx_offset);
+
+            if (sent > 0) {
+                client.tx_offset += sent;
+                continue;
+            }
+
+            if (sent == 0 || errno == ECONNRESET || errno == ENOTCONN) {
+                ESP_LOGD(TAG, "Client %s disconnected during write", client.identifier.c_str());
+                client.disconnected = true;
+                break;
+            }
+
+            if (errno == EWOULDBLOCK || errno == EAGAIN) {
+                break;
+            }
+
+            ESP_LOGW(TAG, "Error writing to client %s: errno=%d", client.identifier.c_str(), errno);
+            client.disconnected = true;
+            break;
+        }
+
+        if (!client.disconnected && client.tx_offset >= client.tx_buffer.size()) {
+            client.tx_buffer.clear();
+            client.tx_offset = 0;
+        }
+    }
+}
+
+void TCPServerComponent::close_client(Client &client) {
+    if (!client.socket)
+        return;
+
+    client.socket->shutdown(SHUT_RDWR);
+    client.socket->close();
+    client.socket.reset();
+    client.tx_buffer.clear();
+    client.tx_offset = 0;
+}
+
 
 bool TCPServerComponent::has_active_clients() const {
   for (const auto &client : this->clients_) {

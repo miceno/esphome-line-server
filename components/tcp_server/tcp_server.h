@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 #include <functional>
+#include <algorithm>
 #include "esphome/core/component.h"
 #include "esphome/components/socket/socket.h"
 #include "esphome/components/network/util.h"
@@ -56,8 +57,12 @@ protected:
             : socket(std::move(socket)), identifier(std::move(identifier)) {}
         std::unique_ptr<esphome::socket::Socket> socket;
         std::string identifier;
+        std::string tx_buffer;
+        size_t tx_offset = 0;
         bool disconnected = false;
     };
+    void flush_pending_writes();
+    void close_client(Client &client);
 
     uint16_t port_{};
     size_t tcp_buf_size_ = 512;
