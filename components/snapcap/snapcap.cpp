@@ -79,20 +79,25 @@ void SnapCapComponent::dump_config() {
 }
 
 void SnapCapComponent::setup(){
-  ESP_LOGD(TAG, "SnapCap version %s", firmware_version_);
+  // Build tag like "snapcap:1234"
+  char tag_buf[32];
+  snprintf(tag_buf, sizeof(tag_buf), "snapcap:%u", this->port_);
+  this->set_log_tag(tag_buf);  // stored as std::string, safe after tag_buf goes out of scope
+
+  ESP_LOGD(this->log_tag_.c_str(), "SnapCap version %s", firmware_version_);
   this->apply_servo_position_(this->servo_position_, false);
   // Call parent setup for proper initialization
   TCPServerComponent::setup();
   // Add SnapCap-specific setup logic here if needed
   if (servo_ != nullptr) {
-      ESP_LOGD(TAG, "Scheduling initial servo position: %d", this->servo_position_);
+      ESP_LOGD(this->log_tag_.c_str(), "Scheduling initial servo position: %d", this->servo_position_);
       this->set_timeout(0, [this]() {
           if (this->servo_ != nullptr) {
               this->servo_->write(this->servo_command_from_position_(this->servo_position_));
           }
       });
   } else {
-      ESP_LOGW(TAG, "No servo configured for SnapCapComponent");
+      ESP_LOGW(this->log_tag_.c_str(), "No servo configured for SnapCapComponent");
   }
 }
 
@@ -103,7 +108,6 @@ void SnapCapComponent::process_command(const std::string &command) {
     auto send_err = [this]() {
         this->send_response("*ERR\r\n");
     };
-
     if (command.size() < 2 || command[0] != '>') {
         send_err();
         return;
@@ -112,7 +116,7 @@ void SnapCapComponent::process_command(const std::string &command) {
     if (opcode == 'O') {
         // Open (small steps)
         if (servo_ == nullptr) {
-            ESP_LOGW(TAG, "Received >O command but no servo is configured");
+            ESP_LOGW(this->log_tag_.c_str(), "Received >O command but no servo is configured");
             send_err();
             return;
         }
@@ -123,7 +127,7 @@ void SnapCapComponent::process_command(const std::string &command) {
     } else if (opcode == 'o') {
         // Force open (one step)
         if (servo_ == nullptr) {
-            ESP_LOGW(TAG, "Received >o command but no servo is configured");
+            ESP_LOGW(this->log_tag_.c_str(), "Received >o command but no servo is configured");
             send_err();
             return;
         }
@@ -134,7 +138,7 @@ void SnapCapComponent::process_command(const std::string &command) {
     } else if (opcode == 'C') {
         // Close (small steps)
         if (servo_ == nullptr) {
-            ESP_LOGW(TAG, "Received >C command but no servo is configured");
+            ESP_LOGW(this->log_tag_.c_str(), "Received >C command but no servo is configured");
             send_err();
             return;
         }
@@ -145,7 +149,7 @@ void SnapCapComponent::process_command(const std::string &command) {
     } else if (opcode == 'c') {
         // Force close (one step)
         if (servo_ == nullptr) {
-            ESP_LOGW(TAG, "Received >c command but no servo is configured");
+            ESP_LOGW(this->log_tag_.c_str(), "Received >c command but no servo is configured");
             send_err();
             return;
         }
@@ -160,7 +164,7 @@ void SnapCapComponent::process_command(const std::string &command) {
     } else if (opcode == 'A') {
         // Abort command
         if (servo_ == nullptr) {
-            ESP_LOGW(TAG, "Received >A command but no servo is configured");
+            ESP_LOGW(this->log_tag_.c_str(), "Received >A command but no servo is configured");
             send_err();
             return;
         }
@@ -208,7 +212,7 @@ void SnapCapComponent::process_command(const std::string &command) {
             return;
         }
         if (servo_ == nullptr) {
-            ESP_LOGW(TAG, "Received >N command but no servo is configured");
+            ESP_LOGW(this->log_tag_.c_str(), "Received >N command but no servo is configured");
             send_err();
             return;
         }
@@ -219,7 +223,7 @@ void SnapCapComponent::process_command(const std::string &command) {
     } else if (opcode == 'S') {
         // Servo status
         if (servo_ == nullptr) {
-            ESP_LOGW(TAG, "Received >S command but no servo is configured");
+            ESP_LOGW(this->log_tag_.c_str(), "Received >S command but no servo is configured");
             send_err();
             return;
         }

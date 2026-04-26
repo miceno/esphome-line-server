@@ -23,6 +23,7 @@ public:
     void set_tcp_flush_timeout(uint32_t ms) { tcp_flush_timeout_ms_ = ms; }
     void set_tcp_terminator(const std::string &term) { tcp_terminator_ = term; }
     void set_tcp_timeout_callback(std::function<std::string(const std::string &)> cb) { tcp_timeout_callback_ = std::move(cb); }
+    void set_log_tag(const char *tag) { log_tag_ = tag; }
 
     virtual void process_command(const std::string &command) {
         // Default: echo command
@@ -44,7 +45,9 @@ protected:
     void flush_pending_writes();
     void close_client(Client &client);
     void dump_tcp_server_config_(const char *tag) const;
+    std::string log_tag_ = "tcp_server";
 
+    // in public section
     struct Client {
         Client(std::unique_ptr<esphome::socket::Socket> socket, std::string identifier)
             : socket(std::move(socket)), identifier(std::move(identifier)) {}
