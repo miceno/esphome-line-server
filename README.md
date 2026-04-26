@@ -105,7 +105,7 @@ Limit switch pins are normally-closed (NC) switches and are pre-configured with 
 - `mode.input: true`
 - `mode.pullup: true`
 
-You can override any of these defaults with a full pin spec.
+You can override any of these defaults with a full pin spec. Always specify pin using the `number:` key.
 
 ### Example — compact (GPIO limit pins, recommended)
 
@@ -115,8 +115,10 @@ rolloffino:
   port: 8888
   in1: D5
   in2: D6
-  opened_limit_pin: D1   # NC switch, inverted+pullup applied automatically
-  closed_limit_pin: D2
+  opened_limit_pin:
+    number: D1    # inverted+pullup applied automatically
+  closed_limit_pin:
+    number: D2
   max_duration: 30s
   tcp_terminator: ")"
 ```
@@ -135,7 +137,8 @@ rolloffino:
     mode:
       input: true
       pullup: false
-  closed_limit_pin: D2
+  closed_limit_pin:
+    number: D2
   max_duration: 30s
   tcp_terminator: ")"
 ```

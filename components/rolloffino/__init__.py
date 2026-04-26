@@ -26,8 +26,8 @@ DEPENDENCIES = ["tcp_server"]
 def _limit_switch_pin_schema(value):
     """Normalize limit switch pin config, applying NC switch defaults:
     inverted=True, mode.input=True, mode.pullup=True.
-    Accepts a bare GPIO number or a full pin spec dict."""
-    if isinstance(value, int):
+    Accepts a bare GPIO number/name or a full pin spec dict."""
+    if isinstance(value, (int, str)):
         value = {"number": value}
     value = dict(value)
     value.setdefault("inverted", True)
