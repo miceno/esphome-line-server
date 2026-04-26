@@ -81,7 +81,8 @@ void SnapCapComponent::process_command(const std::string &command) {
         response = "*O000\r\n";
         cover_status_ = COVER_OPEN;
         servo_status_ = MS_RUNNING;
-        servo_->write(SERVO_POSITION_OPEN);
+        servo_position_ = SERVO_POSITION_OPEN;
+        servo_->write(servo_position_);
     } else if (opcode == 'o') {
         // Force open (one step)
         if (servo_ == nullptr) {
@@ -92,7 +93,8 @@ void SnapCapComponent::process_command(const std::string &command) {
         response = "*o000\r\n";
         cover_status_ = COVER_OPEN;
         servo_status_ = MS_RUNNING;
-        servo_->write(SERVO_POSITION_OPEN);
+        servo_position_ = SERVO_POSITION_OPEN;
+        servo_->write(servo_position_);
     } else if (opcode == 'C') {
         // Close (small steps)
         if (servo_ == nullptr) {
@@ -103,7 +105,8 @@ void SnapCapComponent::process_command(const std::string &command) {
         response = "*C000\r\n";
         cover_status_ = COVER_CLOSED;
         servo_status_ = MS_RUNNING;
-        servo_->write(SERVO_POSITION_CLOSED);
+        servo_position_ = SERVO_POSITION_CLOSED;
+        servo_->write(servo_position_);
     } else if (opcode == 'c') {
         // Force close (one step)
         if (servo_ == nullptr) {
@@ -114,7 +117,8 @@ void SnapCapComponent::process_command(const std::string &command) {
         response = "*c000\r\n";
         cover_status_ = COVER_CLOSED;
         servo_status_ = MS_RUNNING;
-        servo_->write(SERVO_POSITION_CLOSED);
+        servo_position_ = SERVO_POSITION_CLOSED;
+        servo_->write(servo_position_);
     } else if (opcode == 'P') {
         // Ping response and state in one buffer
         snprintf(buf, sizeof(buf), "*P%02d00\r\n", device_id_);
