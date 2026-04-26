@@ -28,11 +28,12 @@ snapcap:
   - `FLAT_MAN_L` (10)
 - **max_degrees** (Optional, default: `270`): Maximum servo rotation in degrees (1–999). Used for linear mapping between degree values and servo output range (-1.0 to 1.0).
 - **brightness** (Optional, default: `128`): Initial LED brightness (0–255).
-- **position** (Optional, default: `0`): Initial servo position in degrees (0–max_degrees).
+- **position** (Optional, default: `0`): Initial servo position in degrees. Values are clamped at runtime to `0..max_degrees`.
 - **port** (Optional, default: `8888`): TCP server listening port.
-- **tcp_buffer_size** (Optional, default: `256`): Ring buffer size for incoming commands.
+- **tcp_buffer_size** (Optional, default: `256`): Ring buffer size for incoming commands. Must be a power of two.
 - **tcp_terminator** (Optional, default: `\r`): Command terminator character(s).
-- **tcp_timeout** (Optional, default: `300ms`): Idle timeout before closing connection.
+- **tcp_timeout** (Optional, default: `300ms`): Idle timeout for incomplete buffered input. When the terminator is not received in time, the partial command is discarded or transformed by `tcp_timeout_lambda`.
+- **tcp_timeout_lambda** (Optional): Lambda that receives a timed-out partial command and returns a replacement command string to process.
 
 ## Degree-Based Positioning
 
@@ -56,46 +57,46 @@ number:
   - platform: snapcap
     snapcap_id: snapcap_main
     name: "SnapCap Servo Position"
-    min_value: 0
-    max_value: 270
     step: 1
 ```
 
 The number entity:
 - Displays current position in degrees
-- Accepts values from 0 to max_degrees
-- Automatically clamps out-of-range values
+- Has a fixed minimum of `0`
+- Uses the parent `snapcap.max_degrees` value as its maximum
+- Accepts values from `0` to `max_degrees`
+- Rounds incoming values to the nearest integer and clamps out-of-range values
 - Syncs bidirectionally with TCP protocol commands
 
 ## TCP Protocol
 
-Commands use a line-based format terminated by `\r` (configurable).
+Commands use a line-based format terminated by `\r` by default (configurable via `tcp_terminator`). Commands begin with `>` and responses begin with `*`. Responses shown below are sent with `\r\n` line endings.
 
 ### Movement Commands
 
 | Command | Response | Effect |
 |---------|----------|--------|
-| `>O000` | `*O000` | Open smoothly (move to max_degrees) |
-| `>o000` | `*o000` | Force open (move to max_degrees in one step) |
-| `>C000` | `*C000` | Close smoothly (move to 0 degrees) |
-| `>c000` | `*c000` | Force close (move to 0 degrees in one step) |
-| `>APPP` | `*A000` | Abort (stop servo and detach) |
+| `>O000` | `*O000` | Open (move to `max_degrees`) |
+| `>o000` | `*o000` | Force open (currently behaves the same as `>O000`) |
+| `>C000` | `*C000` | Close (move to 0 degrees) |
+| `>c000` | `*c000` | Force close (currently behaves the same as `>C000`) |
+| `>A000` | `*A000` | Abort (detach servo) |
 
 ### Position Commands
 
 | Command | Response | Note |
 |---------|----------|------|
-| `>NPPP` | `*NPPP` | Move to position PPP (degrees, 0–max_degrees) |
-| `>M000` | `*MPPP` | Query current position (returns PPP in degrees) |
+| `>NPPP` | `*NPPP` | Move to position `PPP` (degrees, clamped to `0..max_degrees`) |
+| `>M000` | `*MPPP` | Query current position (returns `PPP` in degrees) |
 
 ### Light Commands
 
 | Command | Response | Effect |
 |---------|----------|--------|
-| `>L000` | `*L000` | Turn light on (uses current brightness) |
+| `>L000` | `*L000` | Turn light on |
 | `>D000` | `*D000` | Turn light off |
-| `>BBBB` | `*BBBB` | Set brightness BBB (0–255) |
-| `>J000` | `*JBBB` | Query brightness (returns BBB) |
+| `>BXXX` | `*BXXX` | Set brightness `XXX` (0–255) |
+| `>J000` | `*JXXX` | Query brightness (returns `XXX`) |
 
 ### Status Commands
 
@@ -118,9 +119,6 @@ wifi:
 
 api:
 
-uart:
-  baud_rate: 0
-
 servo:
   - id: cap_servo
     pin: GPIO5
@@ -142,8 +140,6 @@ number:
     snapcap_id: snapcap_main
     name: "SnapCap Servo Position"
     unit_of_measurement: "°"
-    min_value: 0
-    max_value: 270
     step: 1
 ```
 
@@ -151,6 +147,6 @@ number:
 
 - Position values in `>N` commands and `*M` responses are **clamped** to `0..max_degrees`.
 - The Number entity slider automatically respects `max_degrees` as its maximum.
-- If servo is not configured, commands return `*ERR\r\n`.
+- Servo-dependent commands (`>O`, `>o`, `>C`, `>c`, `>A`, `>N`, `>S`) return `*ERR\r\n` if no servo is configured.
 - The component publishes servo position to Home Assistant on each command via the Number entity (if configured).
 
