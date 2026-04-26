@@ -17,6 +17,38 @@ snapcap:
   port: 8888
 ```
 
+### `device_id` accepted values
+
+`device_id` accepts either an enum name or its numeric protocol value.
+
+| Name | Numeric value |
+|------|----------------|
+| `FLAT_MAN_L` | `10` |
+| `FLAT_MAN_XL` | `15` |
+| `FLAT_MAN` | `19` |
+| `FLIP_DUST` | `98` |
+| `FLIP_FLAT` | `99` |
+
+Examples:
+
+```yaml
+# Enum form (recommended)
+snapcap:
+  id: snapcap_main
+  servo_id: my_servo
+  device_id: FLIP_FLAT
+```
+
+```yaml
+# Numeric form
+snapcap:
+  id: snapcap_main
+  servo_id: my_servo
+  device_id: 99
+```
+
+Name matching is case-insensitive; `-` and spaces are normalized to `_`.
+
 ### Parameters
 
 - **servo_id** (Required): Reference to the servo component that controls the cap position.
@@ -149,4 +181,3 @@ number:
 - The Number entity slider automatically respects `max_degrees` as its maximum.
 - Servo-dependent commands (`>O`, `>o`, `>C`, `>c`, `>A`, `>N`, `>S`) return `*ERR\r\n` if no servo is configured.
 - The component publishes servo position to Home Assistant on each command via the Number entity (if configured).
-
