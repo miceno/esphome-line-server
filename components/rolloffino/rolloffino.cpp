@@ -34,6 +34,20 @@ void RolloffinoComponent::loop() {
 
 void RolloffinoComponent::dump_config() {
   LOG_TCP_SERVER(TAG, "Rolloffino", this);
+
+  std::array<char, 128> opened_sensor_obj_id{};
+  std::array<char, 128> closed_sensor_obj_id{};
+
+  const char *opened_sensor_name = "None";
+  if (this->opened_binary_sensor_ != nullptr) {
+    opened_sensor_name = this->opened_binary_sensor_->get_object_id_to(opened_sensor_obj_id).c_str();
+  }
+
+  const char *closed_sensor_name = "None";
+  if (this->closed_binary_sensor_ != nullptr) {
+    closed_sensor_name = this->closed_binary_sensor_->get_object_id_to(closed_sensor_obj_id).c_str();
+  }
+
   ESP_LOGCONFIG(
     TAG,
     "  Duty cycle: %u%%\n" \
@@ -42,8 +56,8 @@ void RolloffinoComponent::dump_config() {
     "  Closed sensor: %s",
     this->duty_cycle_,
     this->max_duration_,
-    this->opened_binary_sensor_ ? this->opened_binary_sensor_->get_object_id().c_str() : "None",
-    this->closed_binary_sensor_ ? this->closed_binary_sensor_->get_object_id().c_str() : "None"
+    opened_sensor_name,
+    closed_sensor_name
   );
   LOG_PIN("  IN1 pin: ", this->in1_pin_);
   LOG_PIN("  IN2 pin: ", this->in2_pin_);

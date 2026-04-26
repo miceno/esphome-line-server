@@ -18,7 +18,7 @@ namespace esphome {
 
 #define LOG_TCP_SERVER(prefix, type, obj) \
   if ((obj) != nullptr) { \
-    ESP_LOGCONFIG(TAG, "  Listening on: %s:%u", esphome::network::get_use_address().c_str(), this->port_); \
+    ESP_LOGCONFIG(TAG, "  Listening on: %s:%u", esphome::network::get_use_address(), this->port_); \
     ESP_LOGCONFIG(TAG, "  TCP buffer: size=%zu, terminator=%s", \
       tcp_buf_size_, \
       esphome::format_hex_pretty((const uint8_t*)tcp_terminator_.data(), tcp_terminator_.size()).c_str()); \
