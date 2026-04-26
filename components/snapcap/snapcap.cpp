@@ -17,7 +17,7 @@ const char *SnapCapComponent::firmware_version_ = "302";
   }
 
 void SnapCapComponent::dump_config() {
-  LOG_TCP_SERVER(TAG, "SnapCap", this);
+  this->TCPServerComponent::dump_tcp_server_config_(TAG);
   ESP_LOGCONFIG(TAG, "SnapCap device ID: %d", device_id_);
   ESP_LOGCONFIG(TAG, "Brightness: %d", brightness_);
   ESP_LOGCONFIG(TAG, "Servo position: %d", servo_position_);
