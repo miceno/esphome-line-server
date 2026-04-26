@@ -51,6 +51,12 @@ void RolloffinoComponent::dump_config() {
     opened_sensor_name,
     closed_sensor_name
   );
+  if (this->opened_limit_pin_ != nullptr) {
+    LOG_PIN("  Opened limit pin: ", this->opened_limit_pin_);
+  }
+  if (this->closed_limit_pin_ != nullptr) {
+    LOG_PIN("  Closed limit pin: ", this->closed_limit_pin_);
+  }
   LOG_PIN("  IN1 pin: ", this->in1_pin_);
   LOG_PIN("  IN2 pin: ", this->in2_pin_);
 }
@@ -146,21 +152,33 @@ void RolloffinoComponent::handle_motor_() {
 
 void RolloffinoComponent::setup() {
   this->set_log_tag(TAG);
-
   ESP_LOGD(TAG, "Rolloffino version %s", VERSION);
   // Call parent setup for proper initialization
   TCPServerComponent::setup();
-  // Add Rolloffino-specific setup logic here if needed
   in1_pin_->setup();
   in2_pin_->setup();
+  if (this->opened_limit_pin_ != nullptr) {
+    this->opened_limit_pin_->setup();
+  }
+  if (this->closed_limit_pin_ != nullptr) {
+    this->closed_limit_pin_->setup();
+  }
   motor_abort_();
 }
 
 bool RolloffinoComponent::is_opened_() const {
+  // Prefer GPIO pin if configured, otherwise fall back to external binary sensor
+  if (this->opened_limit_pin_ != nullptr) {
+    return this->opened_limit_pin_->digital_read();
+  }
   return this->opened_binary_sensor_ != nullptr && this->opened_binary_sensor_->state;
 }
 
 bool RolloffinoComponent::is_closed_() const {
+  // Prefer GPIO pin if configured, otherwise fall back to external binary sensor
+  if (this->closed_limit_pin_ != nullptr) {
+    return this->closed_limit_pin_->digital_read();
+  }
   return this->closed_binary_sensor_ != nullptr && this->closed_binary_sensor_->state;
 }
 

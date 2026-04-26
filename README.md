@@ -82,16 +82,65 @@ The `indi-rolloffino` driver is a popular third-party [INDI](https://indilib.org
 | Key | Type | Default | Description |
 |---|---|---|---|
 | `id` | id | required | Component ID. |
-| `opened_sensor` | binary sensor id | required | Sensor indicating roof fully opened. |
-| `closed_sensor` | binary sensor id | required | Sensor indicating roof fully closed. |
 | `in1` | internal GPIO output | required | Motor driver IN1 pin. |
 | `in2` | internal GPIO output | required | Motor driver IN2 pin. |
-| `duty_cycle` | int 0..100 | `100` | Duty cycle percentage. |
+| `opened_limit_pin` | GPIO input | optional | GPIO pin wired to the opened limit switch. Preferred over `opened_sensor`. |
+| `closed_limit_pin` | GPIO input | optional | GPIO pin wired to the closed limit switch. Preferred over `closed_sensor`. |
+| `opened_sensor` | binary sensor id | optional | External binary sensor indicating roof fully opened. Used if `opened_limit_pin` is not set. |
+| `closed_sensor` | binary sensor id | optional | External binary sensor indicating roof fully closed. Used if `closed_limit_pin` is not set. |
+| `duty_cycle` | int 0..100 | `100` | Duty cycle percentage (reserved for future PWM use). |
 | `max_duration` | duration | `30s` | Maximum movement time before abort. |
 
 `rolloffino` also accepts all shared `tcp_server` options.
 
-### Example
+#### Limit switch detection priority
+
+When both `opened_limit_pin` and `opened_sensor` (or their `closed_*` counterparts) are defined, `opened_limit_pin` takes precedence.
+If neither is configured for a given direction, that limit is treated as never reached (no interlock).
+
+#### `opened_limit_pin` / `closed_limit_pin` defaults
+
+Limit switch pins are normally-closed (NC) switches and are pre-configured with sensible defaults:
+- `inverted: true` — switch at rest reads `HIGH`; closed/triggered reads `true`
+- `mode.input: true`
+- `mode.pullup: true`
+
+You can override any of these defaults with a full pin spec.
+
+### Example — compact (GPIO limit pins, recommended)
+
+```yaml
+rolloffino:
+  id: roof
+  port: 8888
+  in1: D5
+  in2: D6
+  opened_limit_pin: D1   # NC switch, inverted+pullup applied automatically
+  closed_limit_pin: D2
+  max_duration: 30s
+  tcp_terminator: ")"
+```
+
+### Example — with overridden pin spec
+
+```yaml
+rolloffino:
+  id: roof
+  port: 8888
+  in1: D5
+  in2: D6
+  opened_limit_pin:
+    number: D1
+    inverted: false   # override: NO switch instead of NC
+    mode:
+      input: true
+      pullup: false
+  closed_limit_pin: D2
+  max_duration: 30s
+  tcp_terminator: ")"
+```
+
+### Example — legacy (external binary sensors, still supported)
 
 ```yaml
 binary_sensor:
