@@ -2,6 +2,7 @@
 #include "esphome/core/log.h"
 #include "esphome/components/servo/servo.h"
 
+#include <cmath>
 #include <cstdio>
 
 using esphome::tcp_server::TCPServerComponent;
@@ -27,6 +28,33 @@ static bool parse_3_digits(const std::string &command, size_t offset, uint16_t &
 
 const char *SnapCapComponent::firmware_version_ = "302";
 
+uint16_t SnapCapComponent::clamp_servo_position_(uint16_t position) const {
+  return position > this->max_degrees_ ? this->max_degrees_ : position;
+}
+
+float SnapCapComponent::servo_command_from_position_(uint16_t position) const {
+  const float ratio = static_cast<float>(position) / static_cast<float>(this->max_degrees_);
+  return SERVO_POSITION_CLOSED + ratio * (SERVO_POSITION_OPEN - SERVO_POSITION_CLOSED);
+}
+
+void SnapCapComponent::publish_servo_position_() {
+#ifdef USE_NUMBER
+  if (this->servo_position_number_ != nullptr) {
+    this->publishing_number_state_ = true;
+    this->servo_position_number_->publish_state(this->servo_position_);
+    this->publishing_number_state_ = false;
+  }
+#endif
+}
+
+void SnapCapComponent::apply_servo_position_(uint16_t position, bool write_servo) {
+  this->servo_position_ = this->clamp_servo_position_(position);
+  if (write_servo && this->servo_ != nullptr) {
+    this->servo_->write(this->servo_command_from_position_(this->servo_position_));
+  }
+  this->publish_servo_position_();
+}
+
 #define LOG_SERVO(obj) \
   if ((obj) != nullptr) { \
     obj->dump_config(); \
@@ -36,6 +64,7 @@ void SnapCapComponent::dump_config() {
   this->TCPServerComponent::dump_tcp_server_config_(TAG);
   ESP_LOGCONFIG(TAG, "SnapCap device ID: %d", device_id_);
   ESP_LOGCONFIG(TAG, "Brightness: %d", brightness_);
+  ESP_LOGCONFIG(TAG, "Max degrees: %d", max_degrees_);
   ESP_LOGCONFIG(TAG, "Servo position: %d", servo_position_);
   ESP_LOGCONFIG(TAG, "Firmware version: %s", firmware_version_);
   LOG_SERVO(servo_);
@@ -43,14 +72,15 @@ void SnapCapComponent::dump_config() {
 
 void SnapCapComponent::setup(){
   ESP_LOGD(TAG, "SnapCap version %s", firmware_version_);
+  this->apply_servo_position_(this->servo_position_, false);
   // Call parent setup for proper initialization
   TCPServerComponent::setup();
   // Add SnapCap-specific setup logic here if needed
   if (servo_ != nullptr) {
-      ESP_LOGD(TAG, "Scheduling initial servo position: %f", SERVO_POSITION_CLOSED);
+      ESP_LOGD(TAG, "Scheduling initial servo position: %d", this->servo_position_);
       this->set_timeout(0, [this]() {
           if (this->servo_ != nullptr) {
-              this->servo_->write(SERVO_POSITION_CLOSED);
+              this->servo_->write(this->servo_command_from_position_(this->servo_position_));
           }
       });
   } else {
@@ -81,8 +111,7 @@ void SnapCapComponent::process_command(const std::string &command) {
         response = "*O000\r\n";
         cover_status_ = COVER_OPEN;
         servo_status_ = MS_RUNNING;
-        servo_position_ = SERVO_POSITION_OPEN;
-        servo_->write(servo_position_);
+        this->apply_servo_position_(this->max_degrees_, true);
     } else if (opcode == 'o') {
         // Force open (one step)
         if (servo_ == nullptr) {
@@ -93,8 +122,7 @@ void SnapCapComponent::process_command(const std::string &command) {
         response = "*o000\r\n";
         cover_status_ = COVER_OPEN;
         servo_status_ = MS_RUNNING;
-        servo_position_ = SERVO_POSITION_OPEN;
-        servo_->write(servo_position_);
+        this->apply_servo_position_(this->max_degrees_, true);
     } else if (opcode == 'C') {
         // Close (small steps)
         if (servo_ == nullptr) {
@@ -105,8 +133,7 @@ void SnapCapComponent::process_command(const std::string &command) {
         response = "*C000\r\n";
         cover_status_ = COVER_CLOSED;
         servo_status_ = MS_RUNNING;
-        servo_position_ = SERVO_POSITION_CLOSED;
-        servo_->write(servo_position_);
+        this->apply_servo_position_(POSITION_CLOSED, true);
     } else if (opcode == 'c') {
         // Force close (one step)
         if (servo_ == nullptr) {
@@ -117,8 +144,7 @@ void SnapCapComponent::process_command(const std::string &command) {
         response = "*c000\r\n";
         cover_status_ = COVER_CLOSED;
         servo_status_ = MS_RUNNING;
-        servo_position_ = SERVO_POSITION_CLOSED;
-        servo_->write(servo_position_);
+        this->apply_servo_position_(POSITION_CLOSED, true);
     } else if (opcode == 'P') {
         // Ping response and state in one buffer
         snprintf(buf, sizeof(buf), "*P%02d00\r\n", device_id_);
@@ -178,13 +204,12 @@ void SnapCapComponent::process_command(const std::string &command) {
             send_err();
             return;
         }
-        servo_position_ = pos;
         servo_status_ = MS_RUNNING;
-        servo_->write(pos);
+        this->apply_servo_position_(pos, true);
         snprintf(buf, sizeof(buf), "*N%03d\r\n", servo_position_);
         response = buf;
     } else if (opcode == 'S') {
-        // Alternate wifi/serial
+        // Servo status
         if (servo_ == nullptr) {
             ESP_LOGW(TAG, "Received >S command but no servo is configured");
             send_err();
@@ -202,6 +227,24 @@ void SnapCapComponent::process_command(const std::string &command) {
     }
     this->send_response(response);
 }
+
+#ifdef USE_NUMBER
+void SnapCapServoPositionNumber::control(float value) {
+  if (this->parent_ == nullptr)
+    return;
+
+  if (this->parent_->publishing_number_state_) {
+    return;
+  }
+
+  const int rounded = static_cast<int>(std::lround(value));
+  uint16_t position = 0;
+  if (rounded > 0) {
+    position = static_cast<uint16_t>(rounded);
+  }
+  this->parent_->apply_servo_position_(position, true);
+}
+#endif
 
 } // namespace snapcap
 } // namespace esphome

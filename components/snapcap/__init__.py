@@ -8,6 +8,7 @@ snapcap_ns = cg.esphome_ns.namespace("snapcap")
 SnapCapComponent = snapcap_ns.class_("SnapCapComponent", tcp_server.TCPServerComponent)
 
 CONF_SERVO_ID = "servo_id"
+CONF_MAX_DEGREES = "max_degrees"
 
 AUTO_LOAD = ["tcp_server"]
 DEPENDENCIES = ["tcp_server"]
@@ -36,6 +37,7 @@ CONFIG_SCHEMA = cv.Schema({
     cv.GenerateID(): cv.declare_id(SnapCapComponent),
     cv.Optional(CONF_DEVICE_ID, default=DEVICE_TYPE_ENUM["FLIP_FLAT"]): validate_device_type,
     cv.Optional(CONF_BRIGHTNESS, default=128): cv.int_range(min=0, max=255),
+    cv.Optional(CONF_MAX_DEGREES, default=270): cv.int_range(min=1, max=999),
     cv.Optional(CONF_POSITION, default=0): cv.int_range(min=0, max=999),
 
     cv.Required(CONF_SERVO_ID): cv.use_id(servo.Servo),
@@ -48,6 +50,7 @@ async def to_code(config):
 
     cg.add(var.set_device_id(config[CONF_DEVICE_ID]))
     cg.add(var.set_brightness(config[CONF_BRIGHTNESS]))
+    cg.add(var.set_max_degrees(config[CONF_MAX_DEGREES]))
     cg.add(var.set_servo_position(config[CONF_POSITION]))
 
     servo = await cg.get_variable(config[CONF_SERVO_ID])
