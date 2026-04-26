@@ -67,6 +67,14 @@ void SnapCapComponent::dump_config() {
   ESP_LOGCONFIG(TAG, "Max degrees: %d", max_degrees_);
   ESP_LOGCONFIG(TAG, "Servo position: %d", servo_position_);
   ESP_LOGCONFIG(TAG, "Firmware version: %s", firmware_version_);
+#ifdef USE_NUMBER
+  if (servo_position_number_ != nullptr) {
+    ESP_LOGCONFIG(TAG, "Servo Position Number: min=%.0f, max=%.0f, step=%.0f",
+      servo_position_number_->traits.get_min_value(),
+      servo_position_number_->traits.get_max_value(),
+      servo_position_number_->traits.get_step());
+  }
+#endif
   LOG_SERVO(servo_);
 }
 
