@@ -1,0 +1,47 @@
+esphome:
+  name: snapcap-cover-debug
+
+esp8266:
+  board: d1_mini
+
+logger:
+
+wifi:
+  ssid: "example"
+  password: "example123"
+  min_auth_mode: WPA2
+
+output:
+  - platform: esp8266_pwm
+    id: cap_servo_pwm
+    pin: GPIO5
+
+external_components:
+  - source:
+      type: local
+      path: /Users/orestes/devel/esphome-line-server/components
+    components: [tcp_server, snapcap_cover]
+
+servo:
+  - id: cap_servo
+    output: cap_servo_pwm
+    auto_detach_time: 0ms
+
+snapcap_cover:
+  id: cap_cover
+  name: "SnapCap Cover"
+  servo_id: cap_servo
+  port: 9999
+  open_level: 1.0
+  closed_level: -1.0
+  move_duration: 1200ms
+  initial_state: CLOSED
+  assumed_open:
+    name: "SnapCap Assumed Open"
+  state_text:
+    name: "SnapCap State"
+
+
+
+
+

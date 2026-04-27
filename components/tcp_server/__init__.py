@@ -36,7 +36,7 @@ def validate_terminator(value):
     return value
 
 # Validate ESPHome version
-REQUIRES_ESPHOME_VERSION = cv.require_esphome_version(2022, 3, 0)
+REQUIRES_ESPHOME_VERSION = cv.require_esphome_version(2026, 4, 0)
 
 # Validate component schema
 TCP_SERVER_SCHEMA = cv.Schema(

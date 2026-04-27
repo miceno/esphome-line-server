@@ -17,7 +17,7 @@ This project is inspired by:
 
 ## Requirements
 
-- ESPHome `>= 2022.3.0`.
+- ESPHome `>= 2026.4.0`.
 - Target board family: ESP8266
 
 ## Installation
@@ -25,7 +25,7 @@ This project is inspired by:
 ```yaml
 external_components:
   - source: github://miceno/esphome-line-server
-    components: [tcp_server, rolloffino, snapcap]
+    components: [tcp_server, rolloffino, snapcap, snapcap_cover]
 ```
 
 ## Components
@@ -35,6 +35,7 @@ external_components:
 | `tcp_server` | Base TCP server runtime (socket handling, ring buffer, command framing, timeout flush). |
 | `rolloffino` | Rolloffino roof controller protocol implementation on top of `tcp_server`. |
 | `snapcap` | SnapCap protocol implementation on top of `tcp_server` with servo/light control. |
+| `snapcap_cover` | Minimal SnapCap-like binary cap protocol (open/close only) on top of `tcp_server`. |
 
 ## `tcp_server` (base)
 
@@ -198,6 +199,61 @@ number:
 ```
 
 For protocol details and command tables, see `components/snapcap/README.md`.
+
+## `snapcap_cover`
+
+`snapcap_cover` is a simplified SnapCap-compatible component for binary cap control:
+
+- Two logical states: `OPEN` and `CLOSED`
+- Servo-actuated motion with no position sensor
+- Timing-based assumed state transitions
+- Built-in Home Assistant cover entity (assumed state)
+
+### SnapCap Cover Options
+
+| Key | Type | Default | Description |
+|---|---|---|---|
+| `id` | id | required | Component ID. |
+| `name` | string | unset | Optional Home Assistant cover entity name. |
+| `servo_id` | servo id | required | Servo used for cap movement. |
+| `device_id` | enum/int | `FLIP_FLAT` (`99`) | Protocol device identifier. |
+| `open_level` | float `-1.0..1.0` | `1.0` | Servo output level for open target. |
+| `closed_level` | float `-1.0..1.0` | `-1.0` | Servo output level for closed target. |
+| `move_duration` | duration | `1200ms` | Assumed travel time used to settle moving state. |
+| `initial_state` | enum | `CLOSED` | Initial assumed state (`OPEN` or `CLOSED`). |
+| `assumed_open` | binary sensor | unset | Optional assumed open/closed binary sensor (`true`=open). |
+| `state_text` | text sensor | unset | Optional state text sensor (`moving`, `open`, `closed`, `aborted`). |
+
+`snapcap_cover` also accepts all shared `tcp_server` options.
+
+Example:
+
+```yaml
+servo:
+  - id: cap_servo
+    pin: GPIO5
+    auto_detach_time: 0ms
+
+snapcap_cover:
+  id: cap_cover
+  name: "SnapCap Cover"
+  servo_id: cap_servo
+  protocol_device_id: FLIP_FLAT
+  open_level: 1.0
+  closed_level: -1.0
+  move_duration: 1200ms
+  initial_state: CLOSED
+  assumed_open:
+    name: "SnapCap Assumed Open"
+  state_text:
+    name: "SnapCap State"
+  port: 9999
+  tcp_terminator: "\r"
+```
+
+For protocol details, see `components/snapcap_cover/README.md`.
+
+`snapcap_cover` also accepts legacy `device_id` as an alias for `protocol_device_id`.
 
 ## Notes
 
