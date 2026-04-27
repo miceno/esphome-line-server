@@ -27,29 +27,12 @@ void RolloffinoComponent::loop() {
 
 void RolloffinoComponent::dump_config() {
   this->TCPServerComponent::dump_tcp_server_config_(TAG);
-  std::array<char, 128> opened_sensor_obj_id{};
-  std::array<char, 128> closed_sensor_obj_id{};
-
-  const char *opened_sensor_name = "None";
-  if (this->opened_binary_sensor_ != nullptr) {
-    opened_sensor_name = this->opened_binary_sensor_->get_object_id_to(opened_sensor_obj_id).c_str();
-  }
-
-  const char *closed_sensor_name = "None";
-  if (this->closed_binary_sensor_ != nullptr) {
-    closed_sensor_name = this->closed_binary_sensor_->get_object_id_to(closed_sensor_obj_id).c_str();
-  }
-
   ESP_LOGCONFIG(
     TAG,
-    "  Duty cycle: %u%%\n" \
-    "  Max duration: %us\n" \
-    "  Opened sensor: %s\n" \
-    "  Closed sensor: %s",
+    "  Duty cycle: %u%%\n"
+    "  Max duration: %us",
     this->duty_cycle_,
-    this->max_duration_,
-    opened_sensor_name,
-    closed_sensor_name
+    this->max_duration_
   );
   if (this->opened_limit_pin_ != nullptr) {
     LOG_PIN("  Opened limit pin: ", this->opened_limit_pin_);
@@ -167,19 +150,11 @@ void RolloffinoComponent::setup() {
 }
 
 bool RolloffinoComponent::is_opened_() const {
-  // Prefer GPIO pin if configured, otherwise fall back to external binary sensor
-  if (this->opened_limit_pin_ != nullptr) {
-    return this->opened_limit_pin_->digital_read();
-  }
-  return this->opened_binary_sensor_ != nullptr && this->opened_binary_sensor_->state;
+  return this->opened_limit_pin_ != nullptr && this->opened_limit_pin_->digital_read();
 }
 
 bool RolloffinoComponent::is_closed_() const {
-  // Prefer GPIO pin if configured, otherwise fall back to external binary sensor
-  if (this->closed_limit_pin_ != nullptr) {
-    return this->closed_limit_pin_->digital_read();
-  }
-  return this->closed_binary_sensor_ != nullptr && this->closed_binary_sensor_->state;
+  return this->closed_limit_pin_ != nullptr && this->closed_limit_pin_->digital_read();
 }
 
 void RolloffinoComponent::motor_start_(MotorDirection direction, bool in1_state, bool in2_state) {

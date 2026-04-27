@@ -1,9 +1,7 @@
 import esphome.codegen as cg
 import esphome.config_validation as cv
 from esphome import pins
-from esphome.components import binary_sensor
 from esphome.const import (
-    CONF_BUFFER_SIZE,
     CONF_ID,
     CONF_MAX_DURATION,
     CONF_PORT,
@@ -13,9 +11,6 @@ import esphome.components.tcp_server as tcp_server
 CONF_IN1_PIN = "in1"
 CONF_IN2_PIN = "in2"
 CONF_DUTY_CYCLE = "duty_cycle"
-
-CONF_OPENED_SENSOR = "opened_sensor"
-CONF_CLOSED_SENSOR = "closed_sensor"
 CONF_OPENED_LIMIT_PIN = "opened_limit_pin"
 CONF_CLOSED_LIMIT_PIN = "closed_limit_pin"
 
@@ -48,12 +43,9 @@ RolloffinoComponent = rolloffino_ns.class_("RolloffinoComponent",
                                               cg.Component)
 
 
-# Validate only the rolloffino-specific schema additions
 CONFIG_SCHEMA = cv.Schema({
     cv.GenerateID(CONF_ID): cv.declare_id(RolloffinoComponent),
 
-    cv.Optional(CONF_OPENED_SENSOR): cv.use_id(binary_sensor.BinarySensor),
-    cv.Optional(CONF_CLOSED_SENSOR): cv.use_id(binary_sensor.BinarySensor),
     cv.Optional(CONF_OPENED_LIMIT_PIN): LIMIT_SWITCH_PIN_SCHEMA,
     cv.Optional(CONF_CLOSED_LIMIT_PIN): LIMIT_SWITCH_PIN_SCHEMA,
     cv.Required(CONF_IN1_PIN): pins.internal_gpio_output_pin_schema,
@@ -74,16 +66,10 @@ async def to_code(config):
     if CONF_OPENED_LIMIT_PIN in config:
         opened_limit_pin = await cg.gpio_pin_expression(config[CONF_OPENED_LIMIT_PIN])
         cg.add(var.set_opened_limit_pin(opened_limit_pin))
-    elif CONF_OPENED_SENSOR in config:
-        open_sensor = await cg.get_variable(config[CONF_OPENED_SENSOR])
-        cg.add(var.set_opened_binary_sensor(open_sensor))
 
     if CONF_CLOSED_LIMIT_PIN in config:
         closed_limit_pin = await cg.gpio_pin_expression(config[CONF_CLOSED_LIMIT_PIN])
         cg.add(var.set_closed_limit_pin(closed_limit_pin))
-    elif CONF_CLOSED_SENSOR in config:
-        closed_sensor = await cg.get_variable(config[CONF_CLOSED_SENSOR])
-        cg.add(var.set_closed_binary_sensor(closed_sensor))
 
     cg.add(var.set_duty_cycle(config[CONF_DUTY_CYCLE]))
     in1_pin = await cg.gpio_pin_expression(config[CONF_IN1_PIN])

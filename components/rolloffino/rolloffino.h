@@ -9,7 +9,6 @@
 #include "esphome/core/component.h"
 #include "esphome/core/hal.h"
 #include "esphome/core/helpers.h"
-#include "esphome/components/binary_sensor/binary_sensor.h"
 #include "esphome/components/socket/socket.h"
 #include "../tcp_server/ring_buffer.h"
 #include "../tcp_server/tcp_server.h"
@@ -24,20 +23,14 @@ class RolloffinoComponent : public tcp_server::TCPServerComponent {
 public:
     void setup() override;
     void set_duty_cycle(uint16_t duty_cycle) { duty_cycle_ = duty_cycle; }
-    void set_opened_binary_sensor(binary_sensor::BinarySensor *sensor) { this->opened_binary_sensor_ = sensor; }
-    void set_closed_binary_sensor(binary_sensor::BinarySensor *sensor) { this->closed_binary_sensor_ = sensor; }
     void set_opened_limit_pin(GPIOPin *pin) { this->opened_limit_pin_ = pin; }
     void set_closed_limit_pin(GPIOPin *pin) { this->closed_limit_pin_ = pin; }
     void set_in1_pin(GPIOPin *pin) { this->in1_pin_ = pin; }
     void set_in2_pin(GPIOPin *pin) { this->in2_pin_ = pin; }
-    void set_max_duration(uint32_t seconds) {
-        max_duration_ = seconds;
-    }
+    void set_max_duration(uint32_t seconds) { max_duration_ = seconds; }
 
     void process_command(const std::string &command) override;
-
     void dump_config() override;
-
     void loop() override;
 
 protected:
@@ -57,14 +50,11 @@ protected:
     void motor_start_(MotorDirection direction, bool in1_state, bool in2_state);
     void check_and_abort_on_limit_();
 
-    binary_sensor::BinarySensor *opened_binary_sensor_ = nullptr;
-    binary_sensor::BinarySensor *closed_binary_sensor_ = nullptr;
     GPIOPin *opened_limit_pin_ = nullptr;
     GPIOPin *closed_limit_pin_ = nullptr;
-    GPIOPin *in2_pin_ = nullptr;
     GPIOPin *in1_pin_ = nullptr;
+    GPIOPin *in2_pin_ = nullptr;
     uint16_t duty_cycle_ = 100;
-
 
     MotorDirection motor_direction_ = MOTOR_NONE;
     bool motor_active_ = false;
