@@ -1,0 +1,66 @@
+esphome:
+  name: rolloffino-cover-debug
+
+esp8266:
+  board: d1_mini
+
+logger:
+  level: INFO
+
+wifi:
+  ssid: "example"
+  password: "example123"
+  min_auth_mode: WPA2
+
+external_components:
+  - source:
+      type: local
+      path: /Users/orestes/devel/esphome-line-server/components
+    components: [tcp_server, rolloffino_cover]
+
+binary_sensor:
+  - platform: gpio
+    id: opened_binary_sensor
+    pin:
+      number: D1
+      inverted: true
+      mode:
+        input: true
+        pullup: true
+
+  - platform: gpio
+    id: closed_binary_sensor
+    pin:
+      number: D2
+      inverted: true
+      mode:
+        input: true
+        pullup: true
+
+
+
+rolloffino_cover:
+  id: roof_cover
+  name: "Rolloffino Cover"
+  opened_sensor: opened_binary_sensor
+  closed_sensor: closed_binary_sensor
+  in1: D5
+  in2: D6
+  duty_cycle: 80
+  max_duration: 30s
+  port: 8888
+
+
+# rolloffino:
+#   id: mock_rolloffino
+#   opened_sensor: opened_binary_sensor
+#   closed_sensor: closed_binary_sensor
+#   in1: D3
+#   in2: D0
+#   duty_cycle: 80
+#   max_duration: 30s
+#   port: 7777
+
+
+
+
