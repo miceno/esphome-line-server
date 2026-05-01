@@ -8,6 +8,10 @@ This repository contains external ESPHome components for TCP-based device protoc
 - `rolloffino` and `snapcap` build on top of `tcp_server`.
 - `line_server` is legacy in this repository and is not the focus for new work.
 
+## Changelog
+
+- 2026-05-01: `rolloffino_cover` refactor — the component now implements the small motor/limit-sensor helpers locally and inherits from `tcp_server::TCPServerComponent` and `cover::Cover`. This removes a strict compile-time dependency on the `rolloffino` C++ class so the component can be validated and compiled as an external component without forcing a `rolloffino:` YAML block. A sensible default `device_class: shutter` is registered for the cover entity when not provided in YAML.
+
 ## Attribution
 
 This project is inspired by:
@@ -25,7 +29,7 @@ This project is inspired by:
 ```yaml
 external_components:
   - source: github://miceno/esphome-line-server
-    components: [tcp_server, rolloffino, snapcap, snapcap_cover]
+    components: [tcp_server, rolloffino, snapcap, snapcap_cover, rolloffino_cover]
 ```
 
 ## Components
@@ -36,6 +40,7 @@ external_components:
 | `rolloffino` | Rolloffino roof controller protocol implementation on top of `tcp_server`. |
 | `snapcap` | SnapCap protocol implementation on top of `tcp_server` with servo/light control. |
 | `snapcap_cover` | Minimal SnapCap-like binary cap protocol (open/close only) on top of `tcp_server`. |
+| `rolloffino_cover` | Rolloffino-based cover entity exposing the same motor/limit-sensor behavior as `rolloffino`. |
 
 ## `tcp_server` (base)
 
@@ -254,6 +259,69 @@ snapcap_cover:
 For protocol details, see `components/snapcap_cover/README.md`.
 
 `snapcap_cover` also accepts legacy `device_id` as an alias for `protocol_device_id`.
+
+## `rolloffino_cover`
+
+`rolloffino_cover` exposes a Rolloffino-compatible cover entity that maps motor and limit-sensor behavior into a Home Assistant `cover`.
+
+- Two logical states: `OPEN` and `CLOSED`
+- Motor-driven using two GPIO outputs (IN1/IN2) and two limit sensors
+- Preserves the `rolloffino` protocol commands (so network clients remain compatible) while providing a Home Assistant `cover` entity with assumed state
+
+Implementation notes:
+
+- The component was refactored to avoid a strict compile-time dependency on the `rolloffino` C++ class. `rolloffino_cover` implements the small motor/limit-sensor helpers locally and inherits from the shared `tcp_server::TCPServerComponent` and `cover::Cover` classes. This makes the component easier to validate and compile as an external component without forcing a `rolloffino:` YAML block.
+- The codegen provides setters for `in1`, `in2`, `opened_sensor`, `closed_sensor`, `duty_cycle` and `max_duration`, so YAML usage is unchanged for end users.
+- The component registers a sensible default Home Assistant `device_class` of `shutter` for the cover entity when none is provided in YAML.
+
+### Rolloffino Cover Options
+
+| Key | Type | Default | Description |
+|---|---|---|---|
+| `id` | id | required | Component ID. |
+| `name` | string | unset | Optional Home Assistant cover entity name. |
+| `opened_sensor` | binary sensor id | required | Sensor indicating fully opened. |
+| `closed_sensor` | binary sensor id | required | Sensor indicating fully closed. |
+| `in1` | internal GPIO output | required | Motor driver IN1 pin. |
+| `in2` | internal GPIO output | required | Motor driver IN2 pin. |
+| `duty_cycle` | int 0..100 | `100` | Duty cycle percentage. |
+| `max_duration` | duration | `30s` | Maximum movement time before abort. |
+
+`rolloffino_cover` also accepts all shared `tcp_server` options and preserves the existing `rolloffino` protocol behaviour.
+
+Example:
+
+```yaml
+binary_sensor:
+  - platform: gpio
+    id: opened_binary_sensor
+    pin:
+      number: D1
+      inverted: true
+      mode:
+        input: true
+        pullup: true
+
+  - platform: gpio
+    id: closed_binary_sensor
+    pin:
+      number: D2
+      inverted: true
+      mode:
+        input: true
+        pullup: true
+
+rolloffino_cover:
+  id: roof_cover
+  name: "Rolloffino Cover"
+  opened_sensor: opened_binary_sensor
+  closed_sensor: closed_binary_sensor
+  in1: D5
+  in2: D6
+  duty_cycle: 80
+  max_duration: 30s
+  port: 8888
+```
 
 ## Notes
 
