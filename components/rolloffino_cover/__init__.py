@@ -36,14 +36,32 @@ def _add_defaults(config):
         config["device_class"] = "shutter"
     return config
 
+# Validate limit output pin config, applying NC switch defaults
+def _limit_output_pin_schema(value):
+    """Normalize limit output pin config, applying NC switch defaults:
+    inverted=True, mode.output=True, mode.pullup=True.
+    Accepts a bare GPIO number/name or a full pin spec dict."""
+    if isinstance(value, (int, str)):
+        value = {"number": value}
+    value = dict(value)
+    value.setdefault("inverted", True)
+    mode = dict(value.get("mode", {}))
+    mode.setdefault("output", True)
+    mode.setdefault("pullup", True)
+    value["mode"] = mode
+    return pins.internal_gpio_input_pin_schema(value)
+
+
+LIMIT_SWITCH_PIN_SCHEMA = _limit_output_pin_schema
+
 
 CONFIG_SCHEMA = cv.All(
     cover.cover_schema(RolloffinoCoverComponent).extend(
         {
             cv.Required(CONF_OPENED_SENSOR): cv.use_id(binary_sensor.BinarySensor),
             cv.Required(CONF_CLOSED_SENSOR): cv.use_id(binary_sensor.BinarySensor),
-            cv.Required(CONF_IN1_PIN): pins.internal_gpio_output_pin_schema,
-            cv.Required(CONF_IN2_PIN): pins.internal_gpio_output_pin_schema,
+            cv.Required(CONF_IN1_PIN): LIMIT_SWITCH_PIN_SCHEMA,
+            cv.Required(CONF_IN2_PIN): LIMIT_SWITCH_PIN_SCHEMA,
             cv.Optional(CONF_DUTY_CYCLE, default="100"): cv.int_range(min=0, max=100),
             cv.Optional(CONF_MAX_DURATION, default="30s"): cv.positive_time_period_seconds,
         }
