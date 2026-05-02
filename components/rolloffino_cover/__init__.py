@@ -60,8 +60,8 @@ CONFIG_SCHEMA = cv.All(
         {
             cv.Required(CONF_OPENED_SENSOR): cv.use_id(binary_sensor.BinarySensor),
             cv.Required(CONF_CLOSED_SENSOR): cv.use_id(binary_sensor.BinarySensor),
-            cv.Required(CONF_IN1_PIN): LIMIT_OUTPUT_PIN_SCHEMA,
-            cv.Required(CONF_IN2_PIN): LIMIT_OUTPUT_PIN_SCHEMA,
+            cv.Required(CONF_IN1_PIN): pins.internal_gpio_output_pin_schema,
+            cv.Required(CONF_IN2_PIN): pins.internal_gpio_output_pin_schema,
             cv.Optional(CONF_DUTY_CYCLE, default="100"): cv.int_range(min=0, max=100),
             cv.Optional(CONF_MAX_DURATION, default="30s"): cv.positive_time_period_seconds,
         }
