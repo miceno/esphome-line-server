@@ -135,16 +135,16 @@ void RolloffinoCoverComponent::process_command(const std::string &command) {
   std::string response;
   // Process command here (mirror rolloffino behaviour)
   if (command == "(CON:0:0)") {
-    ESP_LOGV(TAG, "Connection request");
+    ESP_LOGD(TAG, "Connection request");
     response = "(ACK:0:0)";
   } else if (command == "(GET:OPENED:0)") {
-    ESP_LOGV(TAG, "Opened status");
+    ESP_LOGD(TAG, "Opened status");
     response = this->is_opened_() ? "(ACK:OPENED:ON)" : "(ACK:OPENED:OFF)";
   } else if (command == "(GET:CLOSED:0)") {
-    ESP_LOGV(TAG, "Closed status");
+    ESP_LOGD(TAG, "Closed status");
     response = this->is_closed_() ? "(ACK:CLOSED:ON)" : "(ACK:CLOSED:OFF)";
   } else if (command == "(SET:OPEN:ON)") {
-    ESP_LOGV(TAG, "Open cover");
+    ESP_LOGD(TAG, "Open cover");
     response = "(ACK:OPEN:ON)";
     if (this->is_opened_()) {
       ESP_LOGW(TAG, "Ignoring OPEN command: opened limit sensor is active");
@@ -152,7 +152,7 @@ void RolloffinoCoverComponent::process_command(const std::string &command) {
       this->motor_open_();
     }
   } else if (command == "(SET:CLOSE:ON)") {
-    ESP_LOGV(TAG, "Close cover");
+    ESP_LOGD(TAG, "Close cover");
     response = "(ACK:CLOSE:ON)";
     if (this->is_closed_()) {
       ESP_LOGW(TAG, "Ignoring CLOSE command: closed limit sensor is active");
@@ -160,14 +160,14 @@ void RolloffinoCoverComponent::process_command(const std::string &command) {
       this->motor_close_();
     }
   } else if (command == "(SET:ABORT:ON)") {
-    ESP_LOGV(TAG, "Abort");
+    ESP_LOGD(TAG, "Abort");
     response = "(ACK:ABORT:ON)";
     this->motor_abort_();
   } else if (command == "(GET:LOCKED:0)") {
-    ESP_LOGV(TAG, "Locked status");
+    ESP_LOGD(TAG, "Locked status");
     response = "(ACK:LOCKED:OFF)";
   } else if (command == "(GET:AUXSTATE:0)") {
-    ESP_LOGV(TAG, "Aux state");
+    ESP_LOGD(TAG, "Aux state");
     response = "(ACK:AUXSTATE:OFF)";
   } else {
     ESP_LOGE(TAG, "Unknown command: %s", command.c_str());
