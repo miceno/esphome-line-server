@@ -46,8 +46,10 @@ def _limit_output_pin_schema(value):
     value = dict(value)
     value.setdefault("inverted", True)
     mode = dict(value.get("mode", {}))
+    # Require output mode for limit outputs, but don't force pullup.
+    # For ESP8266 some pins/modes reject an output+pullup combination,
+    # so leave pullup alone unless user explicitly sets it.
     mode.setdefault("output", True)
-    mode.setdefault("pullup", True)
     value["mode"] = mode
     return pins.internal_gpio_output_pin_schema(value)
 
