@@ -49,7 +49,7 @@ def _limit_output_pin_schema(value):
     mode.setdefault("output", True)
     mode.setdefault("pullup", True)
     value["mode"] = mode
-    return pins.internal_gpio_input_pin_schema(value)
+    return pins.internal_gpio_output_pin_schema(value)
 
 
 LIMIT_SWITCH_PIN_SCHEMA = _limit_output_pin_schema
