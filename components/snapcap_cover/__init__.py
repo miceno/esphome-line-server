@@ -1,7 +1,7 @@
 import esphome.codegen as cg
 import esphome.config_validation as cv
 from esphome.components import servo, binary_sensor, text_sensor, cover
-from esphome.const import CONF_ID
+from esphome.const import CONF_ID, CONF_BRIGHTNESS
 
 import esphome.components.tcp_server as tcp_server
 
@@ -18,6 +18,7 @@ CONF_MOVE_DURATION = "move_duration"
 CONF_INITIAL_STATE = "initial_state"
 CONF_ASSUMED_OPEN = "assumed_open"
 CONF_STATE_TEXT = "state_text"
+CONF_MAX_DEGREES = "max_degrees"
 
 AUTO_LOAD = ["tcp_server", "binary_sensor", "text_sensor", "cover"]
 DEPENDENCIES = ["tcp_server"]
@@ -77,7 +78,7 @@ CONFIG_SCHEMA = cv.All(
         {
             cv.Required(CONF_SERVO_ID): cv.use_id(servo.Servo),
             cv.Optional(
-                CONF_DEVICE_ID, default=DEVICE_TYPE_ENUM["FLIP_FLAT"]
+                CONF_PROTOCOL_DEVICE_ID, default=DEVICE_TYPE_ENUM["FLIP_FLAT"]
             ): validate_device_type,
             cv.Optional(CONF_OPEN_LEVEL, default=1.0): cv.float_range(min=-1.0, max=1.0),
             cv.Optional(CONF_CLOSED_LEVEL, default=-1.0): cv.float_range(
@@ -91,6 +92,10 @@ CONFIG_SCHEMA = cv.All(
             ),
             cv.Optional(CONF_ASSUMED_OPEN): binary_sensor.binary_sensor_schema(),
             cv.Optional(CONF_STATE_TEXT): text_sensor.text_sensor_schema(),
+
+            cv.Optional(CONF_BRIGHTNESS, default=128): cv.int_range(min=0, max=255),
+            cv.Optional(CONF_MAX_DEGREES, default=270): cv.int_range(min=1, max=999),
+
         }
     )
     .extend(tcp_server.TCP_SERVER_SCHEMA),
@@ -102,11 +107,14 @@ async def to_code(config):
     var = cg.new_Pvariable(config[CONF_ID])
     await tcp_server.setup_tcp_server(var, config)
 
-    cg.add(var.set_device_id(config[CONF_DEVICE_ID]))
+    cg.add(var.set_device_id(config[CONF_PROTOCOL_DEVICE_ID]))
     cg.add(var.set_open_level(config[CONF_OPEN_LEVEL]))
     cg.add(var.set_closed_level(config[CONF_CLOSED_LEVEL]))
     cg.add(var.set_move_duration(config[CONF_MOVE_DURATION]))
     cg.add(var.set_initial_opened(config[CONF_INITIAL_STATE] == "OPEN"))
+
+    cg.add(var.set_brightness(config[CONF_BRIGHTNESS]))
+    cg.add(var.set_max_degrees(config[CONF_MAX_DEGREES]))
 
     servo_ref = await cg.get_variable(config[CONF_SERVO_ID])
     cg.add(var.set_servo(servo_ref))

@@ -11,7 +11,21 @@ namespace esphome {
 namespace snapcap_cover {
 
 static const char *const TAG = "snapcap_cover";
-const char *SnapCapCoverComponent::firmware_version_ = "100";
+const char *SnapCapCoverComponent::firmware_version_ = "303";
+
+static bool parse_3_digits(const std::string &command, size_t offset, uint16_t &value) {
+  if (command.size() < offset + 3)
+    return false;
+
+  const char c0 = command[offset + 0];
+  const char c1 = command[offset + 1];
+  const char c2 = command[offset + 2];
+  if (c0 < '0' || c0 > '9' || c1 < '0' || c1 > '9' || c2 < '0' || c2 > '9')
+    return false;
+
+  value = static_cast<uint16_t>((c0 - '0') * 100 + (c1 - '0') * 10 + (c2 - '0'));
+  return true;
+}
 
 cover::CoverTraits SnapCapCoverComponent::get_traits() {
   cover::CoverTraits traits;
@@ -209,7 +223,7 @@ void SnapCapCoverComponent::process_command(const std::string &command) {
   }
 
   if (opcode == 'S') {
-    snprintf(buf, sizeof(buf), "*S%d0%d\r\n", this->servo_status_, this->cover_status_);
+    snprintf(buf, sizeof(buf), "*S%d%d%d\r\n", servo_status_, light_status_, cover_status_);
     this->send_response(buf);
     return;
   }
@@ -225,6 +239,35 @@ void SnapCapCoverComponent::process_command(const std::string &command) {
     return;
   }
 
+  if (opcode == 'B') {
+    // Set brightness
+    uint16_t val = 0;
+    if (!parse_3_digits(command, 2, val) || val > 255) {
+      this->send_response("*ERR\r\n");
+      return;
+    }
+    brightness_ = static_cast<uint8_t>(val);
+    snprintf(buf, sizeof(buf), "*B%03d\r\n", brightness_);
+    this->send_response(buf);
+    return;
+  } else if (opcode == 'J') {
+    // Get brightness
+    snprintf(buf, sizeof(buf), "*J%03d\r\n", brightness_);
+    this->send_response(buf);
+    return;
+  } else if (opcode == 'L') {
+    // Light on
+    light_on_ = true;
+    light_status_ = 1;
+    this->send_response("*L000\r\n");
+    return;
+  } else if (opcode == 'D') {
+    // Light off
+    light_on_ = false;
+    light_status_ = 0;
+    this->send_response("*D000\r\n");
+    return;
+  }
   this->send_response("*ERR\r\n");
 }
 

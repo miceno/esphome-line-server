@@ -27,6 +27,9 @@ class SnapCapCoverComponent : public tcp_server::TCPServerComponent, public cove
   void set_closed_level(float level) { this->closed_level_ = level; }
   void set_move_duration(uint32_t ms) { this->move_duration_ms_ = ms; }
   void set_initial_opened(bool opened) { this->initial_opened_ = opened; }
+  void set_brightness(uint8_t brightness) { brightness_ = brightness; }
+  void set_max_degrees(uint16_t max_degrees) { max_degrees_ = max_degrees; }
+
 #ifdef USE_BINARY_SENSOR
   void set_assumed_open_sensor(binary_sensor::BinarySensor *sensor) { this->assumed_open_sensor_ = sensor; }
 #endif
@@ -64,6 +67,13 @@ class SnapCapCoverComponent : public tcp_server::TCPServerComponent, public cove
   float closed_level_{-1.0f};
   uint32_t move_duration_ms_{1200};
   bool initial_opened_{false};
+
+
+
+  uint8_t brightness_ = 128;
+  bool light_on_ = false;
+  uint16_t max_degrees_ = 270;
+  uint8_t light_status_ = 0;
 
   bool target_opened_{false};
   bool current_opened_{false};
