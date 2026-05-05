@@ -67,12 +67,11 @@ class SnapCapCoverComponent : public tcp_server::TCPServerComponent, public cove
   float closed_level_{-1.0f};
   uint32_t move_duration_ms_{1200};
   bool initial_opened_{false};
+  uint16_t max_degrees_ = 270;
 
-
-
+  uint16_t servo_position_ = 0;
   uint8_t brightness_ = 128;
   bool light_on_ = false;
-  uint16_t max_degrees_ = 270;
   uint8_t light_status_ = 0;
 
   bool target_opened_{false};
@@ -89,6 +88,12 @@ class SnapCapCoverComponent : public tcp_server::TCPServerComponent, public cove
 #endif
 
   static const char *firmware_version_;
+
+  void apply_servo_position_(uint16_t position, bool write_servo);
+  float servo_command_from_position_(uint16_t position) const;
+  uint16_t clamp_servo_position_(uint16_t position) const;
+
+  static constexpr uint16_t POSITION_CLOSED = 0;
 };
 
 }  // namespace snapcap_cover

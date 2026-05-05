@@ -27,6 +27,23 @@ static bool parse_3_digits(const std::string &command, size_t offset, uint16_t &
   return true;
 }
 
+void SnapCapCoverComponent::apply_servo_position_(uint16_t position, bool write_servo) {
+  this->servo_position_ = this->clamp_servo_position_(position);
+  if (write_servo && this->servo_ != nullptr) {
+    this->servo_->write(this->servo_command_from_position_(this->servo_position_));
+  }
+  this->publish_assumed_entities_();
+}
+
+uint16_t SnapCapCoverComponent::clamp_servo_position_(uint16_t position) const {
+  return position > this->max_degrees_ ? this->max_degrees_ : position;
+}
+
+float SnapCapCoverComponent::servo_command_from_position_(uint16_t position) const {
+  const float ratio = static_cast<float>(position) / static_cast<float>(this->max_degrees_);
+  return POSITION_CLOSED + ratio * (open_level_ - closed_level_);
+}
+
 cover::CoverTraits SnapCapCoverComponent::get_traits() {
   cover::CoverTraits traits;
   traits.set_is_assumed_state(true);
