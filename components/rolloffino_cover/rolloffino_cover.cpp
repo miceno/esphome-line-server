@@ -7,7 +7,7 @@
 namespace esphome {
 namespace rolloffino_cover {
 
-static const char *const TAG = "rolloffino_cover";
+static const char * TAG = "rolloffino_cover";
 
 cover::CoverTraits RolloffinoCoverComponent::get_traits() {
   cover::CoverTraits traits;
@@ -77,9 +77,10 @@ void RolloffinoCoverComponent::publish_assumed_entities_() {
 }
 
 void RolloffinoCoverComponent::setup() {
-  char tag_buf[36];
-  snprintf(tag_buf, sizeof(tag_buf), "rolloffino_cover:%u", this->port_);
+  static char tag_buf[36];
+  snprintf(tag_buf, sizeof(tag_buf), "%s.%u", TAG, this->port_);
   this->set_log_tag(tag_buf);
+  TAG = tag_buf;
 
   // Call parent TCPServer setup to init tcp server
   TCPServerComponent::setup();
