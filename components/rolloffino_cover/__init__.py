@@ -1,3 +1,4 @@
+import logging
 import esphome.codegen as cg
 import esphome.config_validation as cv
 from esphome import pins
@@ -7,6 +8,10 @@ from esphome.const import (
     CONF_ID,
     CONF_MAX_DURATION,
     CONF_PORT,
+    CONF_INVERTED,
+    CONF_NUMBER,
+    CONF_MODE,
+    CONF_OUTPUT
 )
 import esphome.components.tcp_server as tcp_server
 
@@ -19,6 +24,8 @@ CONF_CLOSED_SENSOR = "closed_sensor"
 
 AUTO_LOAD = ["tcp_server", "cover"]
 DEPENDENCIES = ["tcp_server"]
+
+_LOGGER = logging.getLogger(__name__)
 
 MULTI_CONF = True
 
@@ -39,18 +46,19 @@ def _add_defaults(config):
 # Validate limit output pin config, applying NC switch defaults
 def _limit_output_pin_schema(value):
     """Normalize limit output pin config, applying NC switch defaults:
-    inverted=True, mode.output=True, mode.pullup=True.
+    inverted=True, mode.output=True
     Accepts a bare GPIO number/name or a full pin spec dict."""
     if isinstance(value, (int, str)):
-        value = {"number": value}
+        value = {CONF_NUMBER: value}
     value = dict(value)
-    value.setdefault("inverted", True)
-    mode = dict(value.get("mode", {}))
+    value.setdefault(CONF_INVERTED, True)
+    mode = dict(value.get(CONF_MODE, {}))
     # Require output mode for limit outputs, but don't force pullup.
     # For ESP8266 some pins/modes reject an output+pullup combination,
     # so leave pullup alone unless user explicitly sets it.
-    mode.setdefault("output", True)
-    value["mode"] = mode
+    mode.setdefault(CONF_OUTPUT, True)
+    value[CONF_MODE] = mode
+    _LOGGER.info(f"Normalized output pin config: {value}")
     return pins.internal_gpio_output_pin_schema(value)
 
 
