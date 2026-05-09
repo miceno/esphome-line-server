@@ -80,6 +80,10 @@ void RolloffinoCoverComponent::setup() {
   static char tag_buf[36];
   snprintf(tag_buf, sizeof(tag_buf), "%s.%u", TAG, this->port_);
   this->set_log_tag(tag_buf);
+
+  in1_pin_->setup();
+  in2_pin_->setup();
+
   TAG = tag_buf;
 
   // Call parent TCPServer setup to init tcp server
