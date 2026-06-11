@@ -98,7 +98,7 @@ void SnapCapCoverComponent::publish_assumed_entities_() {
 }
 
 void SnapCapCoverComponent::setup() {
-  char tag_buf[36];
+  char tag_buf[32];
   snprintf(tag_buf, sizeof(tag_buf), "snapcap_cover:%u", this->port_);
   this->set_log_tag(tag_buf);
 
@@ -111,8 +111,12 @@ void SnapCapCoverComponent::setup() {
   TCPServerComponent::setup();
 
   if (this->servo_ != nullptr) {
-    const float level = this->initial_opened_ ? this->open_level_ : this->closed_level_;
-    this->set_timeout(0, [this, level]() { this->servo_->write(level); });
+    // Ensure the servo is not attached/written to during setup to avoid any
+    // mechanical movement on power-up. Some servo drivers move to a default
+    // position when first attached or when the first write occurs. Detaching
+    // here prevents that. Actual writes will occur only on explicit commands.
+    ESP_LOGD(this->log_tag_.c_str(), "Detach servo to avoid movement on startup");
+    this->servo_->detach();
   } else {
     ESP_LOGW(this->log_tag_.c_str(), "No servo configured for SnapCapCoverComponent");
   }
