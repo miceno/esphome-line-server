@@ -118,6 +118,7 @@ void SnapCapCoverComponent::setup() {
     float initial_level = this->initial_opened_ ? this->open_level_ : this->closed_level_;
     ESP_LOGD(this->log_tag_.c_str(), "Writing initial servo position %.2f", initial_level);
     this->servo_->write(initial_level);
+    this->servo_->detach();
   } else {
     ESP_LOGW(this->log_tag_.c_str(), "No servo configured for SnapCapCoverComponent");
   }
